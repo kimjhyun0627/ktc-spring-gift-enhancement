@@ -1,0 +1,68 @@
+<!-- src/main/resources/templates/admin/member_form.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${memberForm.id} == null ? '신규 회원 등록' : '회원 정보 수정'">회원 폼</title>
+</head>
+<body>
+<h1 th:text="${memberForm.id} == null ? '신규 회원 등록' : '회원 정보 수정'">회원 폼</h1>
+
+<!-- 신규 등록 폼 -->
+<form method="post"
+      th:action="@{/admin/members/new}"
+      th:if="${memberForm.id} == null"
+      th:object="${memberForm}">
+  <div>
+    <label for="email">이메일</label>
+    <input id="email" required th:field="*{email}" type="email"/>
+    <div style="color:red;" th:errors="*{email}" th:if="${#fields.hasErrors('email')}"></div>
+  </div>
+  <div>
+    <label for="password">비밀번호</label>
+    <input id="password" required th:field="*{password}" type="password"/>
+    <div style="color:red;" th:errors="*{password}" th:if="${#fields.hasErrors('password')}"></div>
+  </div>
+  <div>
+    <label for="role">역할</label>
+    <select id="role" required th:field="*{role}">
+      <option value="USER">USER</option>
+      <option value="ADMIN">ADMIN</option>
+    </select>
+    <div style="color:red;" th:errors="*{role}" th:if="${#fields.hasErrors('role')}"></div>
+  </div>
+  <button type="submit">등록</button>
+  <a th:href="@{/admin/members}">취소</a>
+</form>
+
+<!-- 수정 폼 -->
+<form method="post"
+      th:action="@{/admin/members/{id}(id=${memberForm.id})}"
+      th:if="${memberForm.id} != null"
+      th:object="${memberForm}">
+  <input name="_method" type="hidden" value="put"/>
+  <input name="id" th:value="${memberForm.id}" type="hidden"/>
+
+  <div>
+    <label for="email-edit">이메일</label>
+    <input id="email-edit" required th:field="*{email}" type="email"/>
+    <div style="color:red;" th:errors="*{email}" th:if="${#fields.hasErrors('email')}"></div>
+  </div>
+  <div>
+    <label for="password-edit">비밀번호</label>
+    <input id="password-edit" required th:field="*{password}" type="password"/>
+    <div style="color:red;" th:errors="*{password}" th:if="${#fields.hasErrors('password')}"></div>
+  </div>
+  <div>
+    <label for="role-edit">역할</label>
+    <select id="role-edit" required th:field="*{role}">
+      <option th:selected="${memberForm.role=='USER'}" value="USER">USER</option>
+      <option th:selected="${memberForm.role=='ADMIN'}" value="ADMIN">ADMIN</option>
+    </select>
+    <div style="color:red;" th:errors="*{role}" th:if="${#fields.hasErrors('role')}"></div>
+  </div>
+  <button type="submit">수정</button>
+  <a th:href="@{/admin/members}">취소</a>
+</form>
+</body>
+</html>

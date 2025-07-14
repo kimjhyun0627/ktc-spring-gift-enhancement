@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>관리자 대시보드</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 2rem;
+    }
+
+    nav a {
+      margin-right: 1rem;
+      text-decoration: none;
+      color: #3366cc;
+    }
+
+    .card {
+      border: 1px solid #ccd;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>관리자 대시보드</h1>
+  <p th:if="${email}">로그인 ID: <strong th:text="${email}"></strong></p>
+  <nav>
+    <a th:href="@{/admin/dashboard}">대시보드</a>
+    <a th:href="@{/admin/members}">회원 관리</a>
+    <a th:href="@{/admin/products}">상품 관리</a>
+    <a th:href="@{/admin/logout}">로그아웃</a>
+  </nav>
+</header>
+
+<section class="card">
+  <h2>관리자 메뉴</h2>
+  <ul>
+    <li><a th:href="@{/admin/members}">▶ 회원 목록 보기</a></li>
+    <li><a th:href="@{/admin/products}">▶ 상품 목록 보기</a></li>
+    <li><a th:href="@{/admin/products/new}">▶ 새 상품 등록</a></li>
+  </ul>
+</section>
+</body>
+</html>

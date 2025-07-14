@@ -1,0 +1,132 @@
+<!-- src/main/resources/templates/product_form.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${productForm.id} != null ? '상품 수정' : '신규 상품 등록'">상품 폼</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      margin-top: 20px;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    div {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="number"], input[type="url"] {
+      width: calc(100% - 22px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+<h1 th:text="${productForm.id} == null ? '신규 상품 등록' : '상품 수정'"></h1>
+
+<!-- 신규 등록 폼 -->
+<form
+    method="post"
+    th:action="@{/admin/products/new}"
+    th:if="${productForm.id} == null"
+    th:object="${productForm}">
+
+  <div>
+    <label>이름</label>
+    <input placeholder="상품 이름" th:field="*{name}" type="text"/>
+    <p class="error" th:errors="*{name}" th:if="${#fields.hasErrors('name')}"></p>
+  </div>
+
+  <div>
+    <label>가격</label>
+    <input min="0" placeholder="가격 입력" th:field="*{price}" type="number"/>
+    <p class="error" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></p>
+  </div>
+
+  <div>
+    <label>이미지 URL</label>
+    <input placeholder="http://..." th:field="*{imageUrl}" type="url"/>
+    <p class="error" th:errors="*{imageUrl}" th:if="${#fields.hasErrors('imageUrl')}"></p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit">등록</button>
+    <a th:href="@{/admin/products}">취소</a>
+  </div>
+</form>
+
+<!-- 수정 폼 -->
+<form
+    method="post"
+    th:action="@{/admin/products/{id}(id=${productForm.id})}"
+    th:if="${productForm.id} != null"
+    th:object="${productForm}">
+
+  <input name="_method" type="hidden" value="put"/>
+  <input name="id" th:value="${productForm.id}" type="hidden"/>
+
+  <div>
+    <label>이름</label>
+    <input placeholder="상품 이름" th:field="*{name}" type="text"/>
+    <p class="error" th:errors="*{name}" th:if="${#fields.hasErrors('name')}"></p>
+  </div>
+
+  <div>
+    <label>가격</label>
+    <input min="0" placeholder="가격 입력" th:field="*{price}" type="number"/>
+    <p class="error" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></p>
+  </div>
+
+  <div>
+    <label>이미지 URL</label>
+    <input placeholder="http://..." th:field="*{imageUrl}" type="url"/>
+    <p class="error" th:errors="*{imageUrl}" th:if="${#fields.hasErrors('imageUrl')}"></p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit">수정</button>
+    <a th:href="@{/admin/products}">취소</a>
+  </div>
+</form>
+</body>
+</html>
