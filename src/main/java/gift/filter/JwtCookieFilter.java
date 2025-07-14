@@ -6,12 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class JwtCookieFilter extends JwtFilter {
 
     public JwtCookieFilter(JwtUtil jwtUtil) {
@@ -19,24 +14,23 @@ public class JwtCookieFilter extends JwtFilter {
     }
 
     @Override
-    protected boolean shouldFilter(HttpServletRequest httpServletRequest) {
-        String path = httpServletRequest.getRequestURI();
-        String ctx = httpServletRequest.getContextPath();
-        if (path.startsWith(ctx + "/admin/*") ||
-                path.startsWith(ctx + "/api/") ||
-                path.startsWith(ctx + "/css/") ||
-                path.startsWith(ctx + "/js/")) {
+    protected boolean shouldFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String ctx = request.getContextPath();
+        if (uri.startsWith(ctx + "/api/")
+                || uri.startsWith(ctx + "/css/")
+                || uri.startsWith(ctx + "/js/")
+                || uri.equals(ctx + "/admin/login")
+                || uri.equals(ctx + "/admin/logout")) {
             return false;
         }
-        return path.startsWith(ctx + "/admin/");
+        return uri.startsWith(ctx + "/admin/");
     }
 
     @Override
-    protected String resolveToken(HttpServletRequest httpServletRequest) {
-        Cookie[] cookies = httpServletRequest.getCookies();
-        if (cookies == null) {
-            return null;
-        }
+    protected String resolveToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
         return Arrays.stream(cookies)
                 .filter(c -> "AUTH_TOKEN".equals(c.getName()))
                 .findFirst()
@@ -45,14 +39,12 @@ public class JwtCookieFilter extends JwtFilter {
     }
 
     @Override
-    protected void writeError(HttpServletResponse httpServletResponse, String message)
-            throws IOException {
-        httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        httpServletResponse.setContentType("application/json;charset=UTF-8");
-        String body = String.format(
-                "{\"status\":%d,\"error\":\"%s\"}",
-                HttpServletResponse.SC_UNAUTHORIZED, message
+    protected void writeError(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(
+                String.format("{\"status\":%d,\"error\":\"%s\"}",
+                        HttpServletResponse.SC_UNAUTHORIZED, message)
         );
-        httpServletResponse.getWriter().write(body);
     }
 }
