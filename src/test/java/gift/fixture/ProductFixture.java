@@ -17,6 +17,10 @@ public final class ProductFixture {
         return Product.of(id, name, price, imageUrl, hidden);
     }
 
+    public static Product createNoId(String name, int price, String imageUrl, boolean hidden) {
+        return Product.of(null, name, price, imageUrl, hidden);
+    }
+
     public static Product visible(
             Long id,
             String name,
@@ -33,5 +37,13 @@ public final class ProductFixture {
             String imageUrl
     ) {
         return create(id, name, price, imageUrl, true);
+    }
+
+    public static Product visible() {
+        return create(1L, "Product", 100, "http://asdf.png", false);
+    }
+
+    public static Product hidden() {
+        return create(1L, "Product", 100, "http://asdf.png", true);
     }
 }

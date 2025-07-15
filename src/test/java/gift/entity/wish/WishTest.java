@@ -1,111 +1,110 @@
 package gift.entity.wish;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import gift.entity.member.value.MemberId;
+import gift.entity.member.Member;
+import gift.entity.member.value.Role;
+import gift.entity.product.Product;
 import gift.entity.wish.value.Amount;
-import gift.entity.wish.value.ProductId;
 import gift.entity.wish.value.WishId;
 import gift.exception.custom.InvalidWishException;
+import gift.fixture.MemberFixture;
+import gift.fixture.ProductFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class WishTest {
 
     @Test
-    @DisplayName("static of() should create Wish with null id and correct values")
+    @DisplayName("of(Member, Product, int) 팩토리 메서드는 null id와 올바른 필드 값을 설정한다")
     void testOf() {
-        Long memberId = 10L;
-        Long productId = 20L;
-        int amount = 5;
+        Member member = MemberFixture.newRegisteredMember(10L, "user@example.com", "asdfasdf",
+                Role.USER);
+        Product product = ProductFixture.create(20L, "P", 100, "http://asdf.png", false);
+        int quantity = 5;
 
-        Wish wish = Wish.of(memberId, productId, amount);
+        Wish wish = Wish.of(member, product, quantity).withId(1L);
 
-        assertNull(wish.getId(), "id should be null before persistence");
-        assertEquals(new MemberId(memberId), wish.getMemberId());
-        assertEquals(new ProductId(productId), wish.getProductId());
-        assertEquals(new Amount(amount), wish.getAmount());
+        assertThat(wish.getId()).isEqualTo(new WishId(1L));
+        assertThat(wish.getMember().getId().id()).isEqualTo(member.getId().id());
+        assertThat(wish.getProduct().getId().id()).isEqualTo(product.getId().id());
+        assertThat(wish.getAmount()).isEqualTo(new Amount(quantity));
     }
 
     @Test
-    @DisplayName("withId() should return new Wish with given id and keep other fields")
+    @DisplayName("withId은 새로운 id를 가진 복사본을 반환한다")
     void testWithId() {
-        Wish original = Wish.of(1L, 2L, 3);
+        Member member = MemberFixture.newRegisteredMember(1L, "a@a.com", "asdfasdf", Role.USER);
+        Product product = ProductFixture.visible();
+        Wish original = Wish.of(member, product, 3);
+
         Wish updated = original.withId(99L);
 
-        assertNotSame(original, updated);
-        assertEquals(new WishId(99L), updated.getId());
-        // other fields unchanged
-        assertEquals(original.getMemberId(), updated.getMemberId());
-        assertEquals(original.getProductId(), updated.getProductId());
-        assertEquals(original.getAmount(), updated.getAmount());
+        assertThat(updated).isNotSameAs(original);
+        assertThat(updated.getId()).isEqualTo(new WishId(99L));
+        assertThat(updated.getMember()).isEqualTo(original.getMember());
+        assertThat(updated.getProduct()).isEqualTo(original.getProduct());
+        assertThat(updated.getAmount()).isEqualTo(original.getAmount());
     }
 
     @Test
-    @DisplayName("withMember() should return new Wish with updated memberId")
-    void testWithMember() {
-        Wish original = Wish.of(1L, 2L, 3).withId(10L);
-        Wish updated = original.withMember(42L);
-
-        assertNotSame(original, updated);
-        assertEquals(new MemberId(42L), updated.getMemberId());
-        assertEquals(original.getId(), updated.getId());
-        assertEquals(original.getProductId(), updated.getProductId());
-        assertEquals(original.getAmount(), updated.getAmount());
-    }
-
-    @Test
-    @DisplayName("withProductId() should return new Wish with updated productId")
-    void testWithProductId() {
-        Wish original = Wish.of(1L, 2L, 3).withId(10L);
-        Wish updated = original.withProductId(99L);
-
-        assertNotSame(original, updated);
-        assertEquals(new ProductId(99L), updated.getProductId());
-        assertEquals(original.getId(), updated.getId());
-        assertEquals(original.getMemberId(), updated.getMemberId());
-        assertEquals(original.getAmount(), updated.getAmount());
-    }
-
-    @Test
-    @DisplayName("withAmount() should return new Wish with updated amount")
+    @DisplayName("withAmount은 새로운 amount를 가진 복사본을 반환한다")
     void testWithAmount() {
-        Wish original = Wish.of(1L, 2L, 3).withId(10L);
-        Wish updated = original.withAmount(77);
+        Member member = MemberFixture.newRegisteredMember(1L, "a@a.com", "asdfasdf", Role.USER);
+        Product product = ProductFixture.visible();
+        Wish original = Wish.of(member, product, 3).withId(5L);
 
-        assertNotSame(original, updated);
-        assertEquals(new Amount(77), updated.getAmount());
-        assertEquals(original.getId(), updated.getId());
-        assertEquals(original.getMemberId(), updated.getMemberId());
-        assertEquals(original.getProductId(), updated.getProductId());
+        Wish updated = original.withAmount(7);
+
+        assertThat(updated).isNotSameAs(original);
+        assertThat(updated.getAmount()).isEqualTo(new Amount(7));
+        assertThat(updated.getId()).isEqualTo(original.getId());
+        assertThat(updated.getMember()).isEqualTo(original.getMember());
+        assertThat(updated.getProduct()).isEqualTo(original.getProduct());
     }
 
     @Test
-    @DisplayName("getters should return defensive copies")
-    void testGetters() {
-        Wish wish = Wish.of(1L, 2L, 3).withId(5L);
+    @DisplayName("isOwnedBy는 소유한 멤버를 올바르게 판별한다")
+    void testIsOwnedBy() {
+        Member owner = MemberFixture.newRegisteredMember(1L, "u@u.com", "asdfasdf", Role.USER);
+        Member other = MemberFixture.newRegisteredMember(2L, "v@v.com", "asdfasdf", Role.USER);
+        Wish wish = Wish.of(owner, ProductFixture.visible(), 1);
 
-        WishId idCopy = wish.getId();
-        assertEquals(new WishId(5L), idCopy);
-
-        MemberId memberCopy = wish.getMemberId();
-        assertEquals(new MemberId(1L), memberCopy);
-
-        ProductId productCopy = wish.getProductId();
-        assertEquals(new ProductId(2L), productCopy);
-
-        Amount amountCopy = wish.getAmount();
-        assertEquals(new Amount(3), amountCopy);
+        assertThat(wish.isOwnedBy(owner)).isTrue();
+        assertThat(wish.isOwnedBy(other)).isFalse();
     }
 
     @Test
-    @DisplayName("constructor should enforce non-null and valid values")
+    @DisplayName("isForProduct는 해당 상품인지 올바르게 판별한다")
+    void testIsForProduct() {
+        Product p1 = ProductFixture.create(100L, "Name", 1000, "http://asdf.png", false);
+        Wish wish = Wish.of(MemberFixture.visible(), p1, 2);
+
+        assertThat(wish.isForProduct(100L)).isTrue();
+        assertThat(wish.isForProduct(999L)).isFalse();
+    }
+
+    @Test
+    @DisplayName("equals와 hashCode는 id 기준으로 비교한다")
+    void testEqualsHashCode() {
+        Member m = MemberFixture.visible();
+        Product p = ProductFixture.visible();
+        Wish a = Wish.of(m, p, 1).withId(1L);
+        Wish b = Wish.of(m, p, 2).withId(1L);
+        Wish c = Wish.of(m, p, 1).withId(2L);
+
+        assertThat(a).isEqualTo(b);
+        assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        assertThat(a).isNotEqualTo(c);
+    }
+
+    @Test
+    @DisplayName("of 호출 시 null member/product 또는 0 이하 amount는 예외를 던진다")
     void testInvalidArguments() {
-        assertThrows(NullPointerException.class, () -> Wish.of(null, 2L, 3));
-        assertThrows(NullPointerException.class, () -> Wish.of(1L, null, 3));
-        assertThrows(InvalidWishException.class, () -> Wish.of(1L, 2L, 0));
+        Member member = MemberFixture.visible();
+        Product product = ProductFixture.visible();
+
+        assertThrows(InvalidWishException.class, () -> Wish.of(member, product, 0));
     }
 }

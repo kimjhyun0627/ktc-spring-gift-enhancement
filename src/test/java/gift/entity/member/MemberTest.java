@@ -22,7 +22,7 @@ class MemberTest {
 
         assertNull(m.getId(), "Newly registered member should have null id");
         assertEquals(email, m.getEmail().email(), "Email should be set correctly");
-        assertEquals(hash, m.getPassword().password(), "Password hash should be set correctly");
+        assertEquals(hash, m.getPassword().passwordHash(), "Password hash should be set correctly");
         assertEquals(Role.USER, m.getRole(), "Default role should be USER");
         assertNotNull(m.getCreatedAt(), "createdAt should be initialized");
     }
@@ -40,7 +40,7 @@ class MemberTest {
         assertNotNull(m.getId());
         assertEquals(id, m.getId().id(), "ID should be set correctly");
         assertEquals(email, m.getEmail().email(), "Email should be set correctly");
-        assertEquals(hash, m.getPassword().password(), "Password hash should be set correctly");
+        assertEquals(hash, m.getPassword().passwordHash(), "Password hash should be set correctly");
         assertEquals(Role.ADMIN, m.getRole(), "Role should be parsed from roleInput");
         assertEquals(now, m.getCreatedAt(), "createdAt should match provided value");
     }
@@ -79,7 +79,7 @@ class MemberTest {
         Member base = Member.of(2L, "e@e.com", initialHash, "USER", LocalDateTime.now());
         String newHash = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
         Member changed = base.withPasswordHash(newHash);
-        assertEquals(newHash, changed.getPassword().password());
+        assertEquals(newHash, changed.getPassword().passwordHash());
         assertEquals(base.getEmail(), changed.getEmail());
         assertEquals(base.getRole(), changed.getRole());
         assertEquals(base.getId(), changed.getId());

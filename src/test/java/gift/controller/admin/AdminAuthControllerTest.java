@@ -78,7 +78,7 @@ class AdminAuthControllerTest {
         mockMvc.perform(post("/admin/login")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("email", "invalid-email")
-                        .param("password", ""))
+                        .param("passwordHash", ""))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/login_form"));
     }

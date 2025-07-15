@@ -1,5 +1,7 @@
 package gift.fixture;
 
+import static gift.util.HashUtil.sha256;
+
 import gift.entity.member.Member;
 import gift.entity.member.value.Role;
 
@@ -9,11 +11,21 @@ public final class MemberFixture {
     }
 
     public static Member newRegisteredMember(
-            long id, String email, String passwordHash, Role role) {
+            Long id, String email, String password, Role role) {
 
-        Member m = Member.register(email, passwordHash)
+        String passwordHash = sha256(password);
+
+        Member member = Member.register(email, passwordHash)
                 .withRole(role);
-        m = m.withId(id);
-        return m;
+        return member.withId(id);
+    }
+
+    public static Member visible() {
+        return newRegisteredMember(
+                1L,
+                "user@example.com",
+                "password",
+                Role.USER
+        );
     }
 }

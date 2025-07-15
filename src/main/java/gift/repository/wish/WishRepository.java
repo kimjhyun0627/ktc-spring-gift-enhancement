@@ -1,4 +1,3 @@
-// src/main/java/gift/repository/wish/WishRepository.java
 package gift.repository.wish;
 
 import gift.entity.member.Member;

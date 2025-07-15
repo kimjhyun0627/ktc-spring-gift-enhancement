@@ -1,5 +1,6 @@
 package gift.service.member;
 
+import static gift.util.HashUtil.sha256;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,10 +52,10 @@ class MemberServiceTest {
         existing = MemberFixture.newRegisteredMember(
                 1L,
                 "user@test.com",
-                MemberServiceImpl.sha256("password"),
+                "passwordHash",
                 Role.USER
         );
-        authReq = new AuthRequest("user@test.com", "password");
+        authReq = new AuthRequest("user@test.com", "passwordHash");
     }
 
     @Nested
@@ -64,24 +65,25 @@ class MemberServiceTest {
         @Test
         @DisplayName("register: 신규 회원 토큰 발급")
         void registerSuccess() {
-            given(memberRepo.register(any())).willReturn(existing);
+            given(memberRepo.save(any())).willReturn(existing);
             given(jwtUtil.generateToken(1L, USER)).willReturn("token123");
 
             AuthResponse res = service.register(authReq);
 
             assertThat(res.token()).isEqualTo("token123");
-            then(memberRepo).should().register(argThat(m ->
+            then(memberRepo).should().save(argThat(m ->
                     m.getEmail().email().equals("user@test.com") &&
-                            m.getPassword().password().equals(MemberServiceImpl.sha256("password"))
+                            m.getPassword().passwordHash()
+                                    .equals(sha256("passwordHash"))
             ));
         }
 
         @Test
         @DisplayName("login: 존재하지 않는 이메일 예외")
         void loginEmailNotFound() {
-            given(memberRepo.findByEmail("user@test.com")).willReturn(Optional.empty());
+            given(memberRepo.findByEmail_Email("user@test.com")).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> service.login("user@test.com", "password"))
+            assertThatThrownBy(() -> service.login("user@test.com", "passwordHash"))
                     .isInstanceOf(MemberNotFoundException.class)
                     .hasMessageContaining("user@test.com");
         }
@@ -92,12 +94,12 @@ class MemberServiceTest {
             Member wrong = MemberFixture.newRegisteredMember(
                     2L,
                     "user@test.com",
-                    MemberServiceImpl.sha256("wrong"),
+                    sha256("wrong"),
                     Role.USER
             );
-            given(memberRepo.findByEmail("user@test.com")).willReturn(Optional.of(wrong));
+            given(memberRepo.findByEmail_Email("user@test.com")).willReturn(Optional.of(wrong));
 
-            assertThatThrownBy(() -> service.login("user@test.com", "password"))
+            assertThatThrownBy(() -> service.login("user@test.com", "passwordHash"))
                     .isInstanceOf(MemberNotFoundException.class)
                     .hasMessageContaining("user@test.com");
         }
@@ -105,10 +107,10 @@ class MemberServiceTest {
         @Test
         @DisplayName("login: 정상 로그인 시 토큰 반환")
         void loginSuccess() {
-            given(memberRepo.findByEmail("user@test.com")).willReturn(Optional.of(existing));
+            given(memberRepo.findByEmail_Email("user@test.com")).willReturn(Optional.of(existing));
             given(jwtUtil.generateToken(1L, USER)).willReturn("token123");
 
-            AuthResponse res = service.login("user@test.com", "password");
+            AuthResponse res = service.login("user@test.com", "passwordHash");
 
             assertThat(res.token()).isEqualTo("token123");
         }
@@ -158,10 +160,10 @@ class MemberServiceTest {
             Member newM = MemberFixture.newRegisteredMember(
                     2L,
                     "a@b.com",
-                    MemberServiceImpl.sha256("pw"),
+                    sha256("pw"),
                     Role.USER
             );
-            given(memberRepo.register(any())).willReturn(newM);
+            given(memberRepo.save(any())).willReturn(newM);
 
             Member res = service.createMember("a@b.com", "pw", USER, ADMIN);
 
@@ -181,7 +183,7 @@ class MemberServiceTest {
         void updateMemberAsAdmin() {
             Member updated = existing.withEmail("new@t.com").withRole(Role.ADMIN);
             given(memberRepo.findById(1L)).willReturn(Optional.of(existing));
-            given(memberRepo.updateMember(any())).willReturn(updated);
+            given(memberRepo.save(any())).willReturn(updated);
 
             Member res = service.updateMember(1L, "new@t.com", null, ADMIN, ADMIN);
 
