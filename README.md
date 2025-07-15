@@ -6,7 +6,11 @@
 
 ---
 ## STEP 1
-
+* [ ] config 리팩토링
+* [ ] JPA 의존성 추가 & application.properties 설정
+* [ ] entity 리팩토링
+* [ ] Repository 리팩토링
+* [ ] 테스트 코드 작성
 ---
 ## STEP 2
 
