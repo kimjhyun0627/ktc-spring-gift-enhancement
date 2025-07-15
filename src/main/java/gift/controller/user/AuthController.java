@@ -4,6 +4,7 @@ import gift.dto.member.AuthRequest;
 import gift.dto.member.AuthResponse;
 import gift.service.member.MemberService;
 import gift.util.BasicAuthUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRequest authRequest) {
         AuthResponse resp = memberService.register(authRequest);
         return ResponseEntity.status(201).body(resp);
     }

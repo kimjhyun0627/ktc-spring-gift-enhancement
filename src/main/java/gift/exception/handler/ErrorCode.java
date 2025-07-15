@@ -9,6 +9,7 @@ public enum ErrorCode {
     NOT_FOUND,
     BAD_REQUEST,
     UNAUTHORIZED,
+    CONFLICT,
     DATABASE_ERROR,
     INTERNAL_ERROR
 }

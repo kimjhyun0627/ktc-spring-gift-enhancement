@@ -71,7 +71,7 @@ public class AdminMemberController {
         Member m = memberService.getMemberById(id, role)
                 .orElseThrow(() -> new MemberNotFoundException(id.toString()));
         model.addAttribute("memberForm", new MemberForm(
-                m.getId().id(), m.getEmail().email(), m.getPassword().password(), m.getRole()
+                m.getId().id(), m.getEmail().email(), m.getPassword().passwordHash(), m.getRole()
         ));
         return "admin/member_form";
     }

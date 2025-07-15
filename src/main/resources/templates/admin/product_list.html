@@ -129,13 +129,13 @@
       <form method="post"
             style="display:inline"
             th:action="@{/admin/products/{id}/hide(id=${product.id.id()})}"
-            th:if="${!product.hidden()}">
+            th:if="${!product.hidden}">
         <button type="submit">숨김 처리</button>
       </form>
       <form method="post"
             style="display:inline"
             th:action="@{/admin/products/{id}/unhide(id=${product.id.id()})}"
-            th:if="${product.hidden()}">
+            th:if="${product.hidden}">
         <button type="submit">숨김 해제</button>
       </form>
     </td>

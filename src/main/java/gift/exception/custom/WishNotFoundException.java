@@ -8,6 +8,6 @@ public class WishNotFoundException extends BaseException {
 
     public WishNotFoundException(Long id) {
 
-        super(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다 " + id);
+        super(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "위시리스트를 찾을 수 없습니다 " + id);
     }
 }

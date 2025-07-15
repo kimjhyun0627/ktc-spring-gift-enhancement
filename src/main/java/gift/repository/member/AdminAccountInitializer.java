@@ -1,10 +1,11 @@
 package gift.repository.member;
 
-import static gift.service.member.MemberServiceImpl.sha256;
+import static gift.util.HashUtil.sha256;
 
 import gift.entity.member.Member;
 import gift.entity.member.value.Role;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 public class AdminAccountInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminAccountInitializer.class);
+
     private final MemberRepository memberRepository;
 
     public AdminAccountInitializer(MemberRepository memberRepository) {
@@ -25,59 +27,47 @@ public class AdminAccountInitializer {
 
     @EventListener(ContextRefreshedEvent.class)
     public void createAdminAccountIfNotExists() {
-        String adminEmail = "admin@email.com";
-        String adminPassword = "admin123";
-
-        MDC.put("email", adminEmail);
-        MDC.put("role", Role.ADMIN.name());
-        try {
-            if (memberRepository.findByEmail(adminEmail).isEmpty()) {
-                Member admin = Member.of(
-                        null,
-                        adminEmail,
-                        sha256(adminPassword),
-                        Role.ADMIN.name(),
-                        LocalDateTime.now()
-                );
-                memberRepository.register(admin);
-                logger.info("Admin 계정 생성 완료");
-            } else {
-                logger.info("Admin 계정이 이미 존재합니다");
-            }
-        } catch (DataIntegrityViolationException e) {
-            logger.warn("Admin 계정 생성 중 데이터 무결성 위반", e);
-        } catch (Exception e) {
-            logger.error("Admin 계정 초기화 중 오류 발생", e);
-        } finally {
-            MDC.clear();
-        }
+        initAccount(
+                "admin@email.com",
+                "admin123",
+                Role.ADMIN.name(),
+                "Admin"
+        );
     }
 
     @EventListener(ContextRefreshedEvent.class)
     public void createUserAccountIfNotExists() {
-        String userEmail = "user@user.com";
-        String userPassword = "user123";
+        initAccount(
+                "user@user.com",
+                "user123",
+                Role.USER.name(),
+                "User"
+        );
+    }
 
-        MDC.put("email", userEmail);
-        MDC.put("role", Role.USER.name());
+    private void initAccount(String email, String rawPassword, String roleName, String label) {
+        MDC.put("email", email);
+        MDC.put("role", roleName);
         try {
-            if (memberRepository.findByEmail(userEmail).isEmpty()) {
-                Member user = Member.of(
+            Optional<Member> existing = memberRepository.findByEmail_Email(email);
+            if (existing.isEmpty()) {
+                Member account = Member.of(
                         null,
-                        userEmail,
-                        sha256(userPassword),
-                        Role.USER.name(),
+                        email,
+                        sha256(rawPassword),
+                        roleName,
                         LocalDateTime.now()
                 );
-                memberRepository.register(user);
-                logger.info("User 계정 생성 완료");
+                memberRepository.save(account);
+                logger.info("{} 계정 생성 완료", label);
             } else {
-                logger.info("User 계정이 이미 존재합니다");
+                logger.info("{} 계정이 이미 존재합니다", label);
             }
         } catch (DataIntegrityViolationException e) {
-            logger.warn("User 계정 생성 중 데이터 무결성 위반", e);
+            // 중복 email 등 무결성 위반
+            logger.warn("{} 계정 생성 중 데이터 무결성 위반: {}", label, e.getMessage());
         } catch (Exception e) {
-            logger.error("User 계정 초기화 중 오류 발생", e);
+            logger.error("{} 계정 초기화 중 오류 발생", label, e);
         } finally {
             MDC.clear();
         }
