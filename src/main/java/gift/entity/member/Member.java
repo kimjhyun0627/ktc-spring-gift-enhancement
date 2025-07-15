@@ -3,21 +3,47 @@ package gift.entity.member;
 import gift.entity.member.value.MemberEmail;
 import gift.entity.member.value.MemberId;
 import gift.entity.member.value.MemberPasswordHash;
-import gift.entity.member.value.MemberRole;
 import gift.entity.member.value.Role;
+import gift.entity.member.value.RoleConverter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "member")
 public class Member {
 
-    private final MemberId id;
-    private final MemberEmail email;
-    private final MemberPasswordHash passwordHash;
-    private final Role role;
-    private final LocalDateTime createdAt;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Embedded
+    private MemberEmail email;
+
+    @Embedded
+    private MemberPasswordHash passwordHash;
+
+    @Convert(converter = RoleConverter.class)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    protected Member() {
+
+    }
 
     private Member(
-            MemberId id,
+            Long id,                       // ← MemberId 대신 Long
             MemberEmail email,
             MemberPasswordHash passwordHash,
             Role role,
@@ -46,17 +72,17 @@ public class Member {
             String roleInput,
             LocalDateTime createdAt) {
         return new Member(
-                id != null ? new MemberId(id) : null,
+                id,
                 new MemberEmail(email),
                 new MemberPasswordHash(passwordHash),
-                new MemberRole(roleInput).role(),
+                Role.of(roleInput),
                 createdAt
         );
     }
 
     public Member withId(Long newId) {
         return new Member(
-                new MemberId(newId),
+                newId,
                 this.email,
                 this.passwordHash,
                 this.role,
@@ -95,7 +121,7 @@ public class Member {
     }
 
     public MemberId getId() {
-        return id;
+        return id == null ? null : new MemberId(id);
     }
 
     public MemberEmail getEmail() {

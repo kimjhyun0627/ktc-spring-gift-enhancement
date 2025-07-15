@@ -5,15 +5,35 @@ import gift.entity.product.value.ProductId;
 import gift.entity.product.value.ProductImageUrl;
 import gift.entity.product.value.ProductName;
 import gift.entity.product.value.ProductPrice;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import java.util.Objects;
 
+@Entity
+@Table(name = "product")
 public class Product {
 
-    private final ProductId id;
-    private final ProductName name;
-    private final ProductPrice price;
-    private final ProductImageUrl imageUrl;
-    private final boolean hidden;
+    @EmbeddedId
+    private ProductId id;
+
+    @Embedded
+    private ProductName name;
+
+    @Embedded
+    private ProductPrice price;
+
+    @Embedded
+    private ProductImageUrl imageUrl;
+
+    @Column(name = "hidden", nullable = false)
+    private boolean hidden;
+
+    protected Product() {
+
+    }
 
     private Product(ProductId id, ProductName name, ProductPrice price, ProductImageUrl imageUrl,
             boolean hidden) {
@@ -72,23 +92,23 @@ public class Product {
         return new ProductResponse(id.id(), name.name(), price.price(), imageUrl.url());
     }
 
-    public ProductId id() {
+    public ProductId getId() {
         return id;
     }
 
-    public ProductName name() {
+    public ProductName getName() {
         return name;
     }
 
-    public ProductPrice price() {
+    public ProductPrice getPrice() {
         return price;
     }
 
-    public ProductImageUrl imageUrl() {
+    public ProductImageUrl getImageUrl() {
         return imageUrl;
     }
 
-    public boolean hidden() {
+    public boolean isHidden() {
         return hidden;
     }
 

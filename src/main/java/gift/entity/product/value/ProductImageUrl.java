@@ -1,12 +1,18 @@
 package gift.entity.product.value;
 
 import gift.exception.custom.InvalidProductException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public record ProductImageUrl(String url) {
+@Embeddable
+public record ProductImageUrl(
+        @Column(name = "image_url", nullable = false)
+        String url
+) {
 
     private static final Pattern URL_PATTERN = Pattern.compile(
             "^(?:http|https)://[\\w.-]+(?:\\.[\\w.-]+)+(?:/\\S*)?$",
@@ -16,10 +22,7 @@ public record ProductImageUrl(String url) {
     public ProductImageUrl {
         Objects.requireNonNull(url, "이미지 URL은 필수 입력값입니다.");
         String trimmed = url.trim();
-        if (trimmed.isEmpty()) {
-            throw new InvalidProductException("이미지 URL은 필수 입력값입니다.");
-        }
-        if (!URL_PATTERN.matcher(trimmed).matches()) {
+        if (trimmed.isEmpty() || !URL_PATTERN.matcher(trimmed).matches()) {
             throw new InvalidProductException("올바른 HTTP/HTTPS 이미지 URL이어야 합니다.");
         }
         try {

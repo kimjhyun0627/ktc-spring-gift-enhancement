@@ -1,13 +1,18 @@
 package gift.entity.member.value;
 
 import gift.exception.custom.InvalidMemberException;
-import java.util.Objects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
-public record MemberId(Long id) {
+
+@Embeddable
+public record MemberId(
+        @Column(name = "id")
+        Long id
+) {
 
     public MemberId {
-        Objects.requireNonNull(id, "회원 ID는 null일 수 없습니다.");
-        if (id <= 0) {
+        if (id != null && id <= 0) {
             throw new InvalidMemberException("회원 ID는 양수여야 합니다.");
         }
     }
