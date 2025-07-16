@@ -11,12 +11,14 @@ import gift.exception.custom.MemberAlreadyExistsException;
 import gift.exception.custom.MemberNotFoundException;
 import gift.repository.member.MemberRepository;
 import gift.util.JwtUtil;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 public class MemberServiceImpl implements MemberService {
 
     private final JwtUtil jwtUtil;
