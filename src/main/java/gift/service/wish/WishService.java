@@ -10,7 +10,7 @@ public interface WishService {
 
     Wish addWish(Member member, Long productId, int amount);
 
-    Wish updateWish(Long id, Member member, Long productId, int amount);
+    Wish changeWishAmount(Long id, Member member, Long productId, int amount);
 
     void removeWish(Long wishId, Member member);
 

@@ -4,11 +4,11 @@ import gift.entity.member.value.MemberEmail;
 import gift.entity.member.value.MemberId;
 import gift.entity.member.value.MemberPasswordHash;
 import gift.entity.member.value.Role;
-import gift.entity.member.value.RoleConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,7 +31,7 @@ public class Member {
     @Embedded
     private MemberPasswordHash passwordHash;
 
-    @Convert(converter = RoleConverter.class)
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
 

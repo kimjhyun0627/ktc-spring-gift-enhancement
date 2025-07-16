@@ -14,28 +14,28 @@ public class FilterConfig {
 
     @Bean
     public FilterRegistrationBean<JwtHeaderFilter> jwtHeaderFilter(JwtUtil jwtUtil) {
-        FilterRegistrationBean<JwtHeaderFilter> reg = new FilterRegistrationBean<>();
-        reg.setFilter(new JwtHeaderFilter(jwtUtil));
-        reg.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        reg.addUrlPatterns("/api/*");
-        return reg;
+        FilterRegistrationBean<JwtHeaderFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new JwtHeaderFilter(jwtUtil));
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registrationBean.addUrlPatterns("/api/*");
+        return registrationBean;
     }
 
     @Bean
     public FilterRegistrationBean<JwtCookieFilter> jwtCookieFilter(JwtUtil jwtUtil) {
-        FilterRegistrationBean<JwtCookieFilter> reg = new FilterRegistrationBean<>();
-        reg.setFilter(new JwtCookieFilter(jwtUtil));
-        reg.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
-        reg.addUrlPatterns("/admin/*");
-        return reg;
+        FilterRegistrationBean<JwtCookieFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new JwtCookieFilter(jwtUtil));
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        registrationBean.addUrlPatterns("/admin/*");
+        return registrationBean;
     }
 
     @Bean
     public FilterRegistrationBean<AdminCookieFilter> adminCookieFilter() {
-        FilterRegistrationBean<AdminCookieFilter> reg = new FilterRegistrationBean<>();
-        reg.setFilter(new AdminCookieFilter());
-        reg.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
-        reg.addUrlPatterns("/admin/login", "/admin/logout");
-        return reg;
+        FilterRegistrationBean<AdminCookieFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new AdminCookieFilter());
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
+        registrationBean.addUrlPatterns("/admin/login", "/admin/logout");
+        return registrationBean;
     }
 }

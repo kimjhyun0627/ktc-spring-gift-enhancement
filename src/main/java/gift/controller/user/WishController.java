@@ -38,15 +38,15 @@ public class WishController {
     @PostMapping
     public WishResponse create(@RequestBody WishRequest request,
             @LoginMember Member member) {
-        Wish w = wishService.addWish(member, request.productId(), request.amount());
-        return WishResponse.of(w.getId(), w.getProduct().getId(), w.getAmount());
+        Wish wish = wishService.addWish(member, request.productId(), request.amount());
+        return WishResponse.of(wish.getId(), wish.getProduct().getId(), wish.getAmount());
     }
 
     @PutMapping("/{wishId}")
     public WishResponse update(@PathVariable("wishId") Long wishId,
             @RequestBody WishRequest request,
             @LoginMember Member member) {
-        Wish wish = wishService.updateWish(wishId, member, request.productId(),
+        Wish wish = wishService.changeWishAmount(wishId, member, request.productId(),
                 request.amount());
         return WishResponse.of(wish.getId(), wish.getProduct().getId(), wish.getAmount());
     }

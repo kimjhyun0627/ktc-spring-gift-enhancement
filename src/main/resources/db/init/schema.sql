@@ -23,6 +23,8 @@ CREATE TABLE WISH
     product_id BIGINT NOT NULL,
     amount     INT    NOT NULL,
 
+    CONSTRAINT uk_wish_member_product UNIQUE (member_id, product_id),
+    
     CONSTRAINT fk_wish_member
         FOREIGN KEY (member_id)
             REFERENCES MEMBER (id)

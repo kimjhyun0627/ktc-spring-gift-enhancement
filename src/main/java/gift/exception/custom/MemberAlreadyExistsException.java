@@ -7,6 +7,6 @@ import org.springframework.http.HttpStatus;
 public class MemberAlreadyExistsException extends BaseException {
 
     public MemberAlreadyExistsException(String message) {
-        super(ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST, message);
+        super(ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST, "이미 존재하는 회원입니다: " + message);
     }
 }

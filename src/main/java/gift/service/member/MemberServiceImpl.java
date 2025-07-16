@@ -68,9 +68,9 @@ public class MemberServiceImpl implements MemberService {
             String email, String rawPassword, Role newRole, Role role) {
         checkAdmin(role);
         String hash = sha256(rawPassword);
-        Member member = Member.register(email, hash)
+        Member newMember = Member.register(email, hash)
                 .withRole(newRole);
-        return memberRepository.save(member);
+        return memberRepository.save(newMember);
     }
 
     @Override
@@ -81,12 +81,12 @@ public class MemberServiceImpl implements MemberService {
             Role newRole,
             Role role) {
         checkAdmin(role);
-        Member existing = memberRepository.findById(id)
+        Member existingMember = memberRepository.findById(id)
                 .orElseThrow(() -> new MemberNotFoundException(id.toString()));
         String hash = rawPassword != null && !rawPassword.isBlank()
                 ? sha256(rawPassword)
-                : existing.getPassword().passwordHash();
-        Member updated = existing.withEmail(email)
+                : existingMember.getPassword().passwordHash();
+        Member updated = existingMember.withEmail(email)
                 .withPasswordHash(hash)
                 .withRole(newRole);
         return memberRepository.save(updated);

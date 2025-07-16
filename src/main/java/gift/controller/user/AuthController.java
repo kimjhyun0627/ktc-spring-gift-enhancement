@@ -24,19 +24,19 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRequest authRequest) {
-        AuthResponse resp = memberService.register(authRequest);
-        return ResponseEntity.status(201).body(resp);
+        AuthResponse authResponse = memberService.register(authRequest);
+        return ResponseEntity.status(201).body(authResponse);
     }
 
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @RequestHeader("Authorization") String authHeader) {
-        BasicAuthUtil.Credentials cred = BasicAuthUtil.parse(authHeader);
-        String email = cred.email();
-        String password = cred.password();
+        BasicAuthUtil.Credentials parsed = BasicAuthUtil.parse(authHeader);
+        String email = parsed.email();
+        String password = parsed.password();
 
-        AuthResponse resp = memberService.login(email, password);
-        return ResponseEntity.ok(resp);
+        AuthResponse authResponse = memberService.login(email, password);
+        return ResponseEntity.ok(authResponse);
     }
 }

@@ -45,14 +45,15 @@ public class WishServiceImpl implements WishService {
     }
 
     @Override
+    @Transactional
     public Wish addWish(Member member, Long productId, int amount) {
         memberService.getMemberById(member.getId().id(), Role.ADMIN)
                 .orElseThrow(() -> new MemberNotFoundException(member.getEmail().email()));
 
-        Product existing = productService.getProductById(productId, member.getRole())
+        Product existingProduct = productService.getProductById(productId, member.getRole())
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
-        Wish newWish = Wish.of(member, existing, amount);
+        Wish newWish = Wish.of(member, existingProduct, amount);
         try {
             return wishRepository.save(newWish);
         } catch (DataIntegrityViolationException e) {
@@ -61,27 +62,28 @@ public class WishServiceImpl implements WishService {
     }
 
     @Override
-    public Wish updateWish(Long wishId, Member member, Long productId, int amount) {
-        Wish existing = wishRepository.findById(wishId)
+    @Transactional
+    public Wish changeWishAmount(Long wishId, Member member, Long productId, int amount) {
+        Wish existingWish = wishRepository.findById(wishId)
                 .orElseThrow(() -> new WishNotFoundException(wishId));
-        if (!existing.isOwnedBy(member)) {
+        if (!existingWish.isOwnedBy(member)) {
             throw new UnauthorizedWishAccessException(member.getId().id(),
-                    existing.getMember().getId().id());
+                    existingWish.getMember().getId().id());
         }
-        if (!existing.isForProduct(productId)) {
+        if (!existingWish.isForProduct(productId)) {
             throw new InvalidProductException("상품의 수량만 변경 가능합니다: " + productId);
         }
-        return wishRepository.save(existing.withAmount(amount));
+        return wishRepository.save(existingWish.withAmount(amount));
     }
 
     @Override
     public void removeWish(Long wishId, Member member) {
-        Wish existing = wishRepository.findById(wishId)
+        Wish targetWish = wishRepository.findById(wishId)
                 .orElseThrow(() -> new WishNotFoundException(wishId));
 
-        if (!existing.isOwnedBy(member)) {
-            throw new UnauthorizedWishAccessException(member.getId().id(), existing.getId().id());
+        if (!targetWish.isOwnedBy(member)) {
+            throw new UnauthorizedWishAccessException(member.getId().id(), targetWish.getId().id());
         }
-        wishRepository.delete(existing);
+        wishRepository.delete(targetWish);
     }
 }
