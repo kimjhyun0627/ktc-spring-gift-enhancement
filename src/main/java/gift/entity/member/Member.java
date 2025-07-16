@@ -14,7 +14,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @Table(name = "member")
@@ -22,7 +21,7 @@ public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", updatable = false)
     private Long id;
 
     @Embedded
@@ -43,7 +42,7 @@ public class Member {
     }
 
     private Member(
-            Long id,                       // ← MemberId 대신 Long
+            Long id,
             MemberEmail email,
             MemberPasswordHash passwordHash,
             Role role,
@@ -120,6 +119,18 @@ public class Member {
         );
     }
 
+    public void changeEmail(String newEmail) {
+        this.email = new MemberEmail(newEmail);
+    }
+
+    public void changePasswordHash(String newPasswordHash) {
+        this.passwordHash = new MemberPasswordHash(newPasswordHash);
+    }
+
+    public void changeRole(Role newRole) {
+        this.role = newRole;
+    }
+
     public MemberId getId() {
         return id == null ? null : new MemberId(id);
     }
@@ -138,21 +149,5 @@ public class Member {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Member that)) {
-            return false;
-        }
-        return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }

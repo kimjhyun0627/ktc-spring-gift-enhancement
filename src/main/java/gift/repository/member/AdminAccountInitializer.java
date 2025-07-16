@@ -64,7 +64,6 @@ public class AdminAccountInitializer {
                 logger.info("{} 계정이 이미 존재합니다", label);
             }
         } catch (DataIntegrityViolationException e) {
-            // 중복 email 등 무결성 위반
             logger.warn("{} 계정 생성 중 데이터 무결성 위반: {}", label, e.getMessage());
         } catch (Exception e) {
             logger.error("{} 계정 초기화 중 오류 발생", label, e);

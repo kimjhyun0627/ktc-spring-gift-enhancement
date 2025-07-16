@@ -10,7 +10,6 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import java.util.Objects;
 
 @Entity
 @Table(name = "product")
@@ -88,6 +87,22 @@ public class Product {
         return new Product(id, name, price, imageUrl, newHidden);
     }
 
+    public void changeName(String newName) {
+        this.name = new ProductName(newName);
+    }
+
+    public void changePrice(int newPrice) {
+        this.price = new ProductPrice(newPrice);
+    }
+
+    public void changeImageUrl(String newUrl) {
+        this.imageUrl = new ProductImageUrl(newUrl);
+    }
+
+    public void changeHidden(boolean newHidden) {
+        this.hidden = newHidden;
+    }
+    
     public ProductResponse toResponse() {
         return new ProductResponse(id.id(), name.name(), price.price(), imageUrl.url());
     }
@@ -110,21 +125,5 @@ public class Product {
 
     public boolean isHidden() {
         return hidden;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Product other)) {
-            return false;
-        }
-        return Objects.equals(id, other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }

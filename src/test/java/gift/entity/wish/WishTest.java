@@ -86,20 +86,6 @@ class WishTest {
     }
 
     @Test
-    @DisplayName("equals와 hashCode는 id 기준으로 비교한다")
-    void testEqualsHashCode() {
-        Member m = MemberFixture.visible();
-        Product p = ProductFixture.visible();
-        Wish a = Wish.of(m, p, 1).withId(1L);
-        Wish b = Wish.of(m, p, 2).withId(1L);
-        Wish c = Wish.of(m, p, 1).withId(2L);
-
-        assertThat(a).isEqualTo(b);
-        assertThat(a.hashCode()).isEqualTo(b.hashCode());
-        assertThat(a).isNotEqualTo(c);
-    }
-
-    @Test
     @DisplayName("of 호출 시 null member/product 또는 0 이하 amount는 예외를 던진다")
     void testInvalidArguments() {
         Member member = MemberFixture.visible();

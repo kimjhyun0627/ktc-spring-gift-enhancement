@@ -41,7 +41,7 @@ public class WishServiceImpl implements WishService {
     public List<Wish> getWishes(Member member) {
         memberService.getMemberById(member.getId().id(), Role.ADMIN)
                 .orElseThrow(() -> new MemberNotFoundException(member.getEmail().email()));
-        return wishRepository.findByMember(member);
+        return wishRepository.findByMember_Id(member.getId().id());
     }
 
     @Override
@@ -73,7 +73,8 @@ public class WishServiceImpl implements WishService {
         if (!existingWish.isForProduct(productId)) {
             throw new InvalidProductException("상품의 수량만 변경 가능합니다: " + productId);
         }
-        return wishRepository.save(existingWish.withAmount(amount));
+        existingWish.changeAmount(amount);
+        return existingWish;
     }
 
     @Override

@@ -2,7 +2,6 @@ package gift.entity.product;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -118,16 +117,5 @@ class ProductTest {
         assertEquals(p.getName().name(), resp.name());
         assertEquals(p.getPrice().price(), resp.price());
         assertEquals(p.getImageUrl().url(), resp.imageUrl());
-    }
-
-    @Test
-    void equalsAndHashCode_basedOnId() {
-        Product p1 = Product.of(100L, "X", 100, "http://cdn.test.com/u.png", false);
-        Product p2 = Product.of(100L, "Y", 200, "http://cdn.test.com/v.png", true);
-        Product p3 = Product.of(101L, "X", 100, "http://cdn.test.com/u.png", false);
-
-        assertEquals(p1, p2, "Products with same id should be equal");
-        assertEquals(p1.hashCode(), p2.hashCode());
-        assertNotEquals(p1, p3);
     }
 }

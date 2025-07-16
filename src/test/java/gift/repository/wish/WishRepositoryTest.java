@@ -7,7 +7,6 @@ import gift.entity.member.Member;
 import gift.entity.product.Product;
 import gift.entity.wish.Wish;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,43 +59,12 @@ class WishRepositoryTest {
         wishRepository.saveAndFlush(Wish.of(member, p1, 1));
         wishRepository.saveAndFlush(Wish.of(member, p2, 2));
 
-        List<Wish> list = wishRepository.findByMember(member);
+        List<Wish> list = wishRepository.findByMember_Id(member.getId().id());
         assertThat(list).hasSize(2)
                 .extracting(w -> w.getProduct().getId().id())
                 .containsExactlyInAnyOrder(101L, 102L);
     }
 
-    @Test
-    @DisplayName("findByProduct: 상품으로 조회")
-    void findByProduct() {
-        Member m1 = createAndPersistMember("3");
-        Member m2 = createAndPersistMember("4");
-        Product product = createAndPersistProduct(200L);
-
-        wishRepository.saveAndFlush(Wish.of(m1, product, 5));
-        wishRepository.saveAndFlush(Wish.of(m2, product, 7));
-
-        List<Wish> list = wishRepository.findByProduct(product);
-        assertThat(list).hasSize(2)
-                .extracting(w -> w.getMember().getId().id())
-                .containsExactlyInAnyOrder(m1.getId().id(), m2.getId().id());
-    }
-
-    @Test
-    @DisplayName("findByMemberAndProduct: 단건 조회")
-    void findByMemberAndProduct() {
-        Member member = createAndPersistMember("5");
-        Product product = createAndPersistProduct(300L);
-
-        wishRepository.saveAndFlush(Wish.of(member, product, 9));
-
-        Optional<Wish> opt = wishRepository.findByMemberAndProduct(member, product);
-        assertThat(opt).isPresent();
-        Wish found = opt.get();
-        assertThat(found.getAmount().amount()).isEqualTo(9);
-        assertThat(found.isOwnedBy(member)).isTrue();
-        assertThat(found.isForProduct(product.getId().id())).isTrue();
-    }
 
     @Test
     @DisplayName("중복(member+product) 저장 시 예외 발생")

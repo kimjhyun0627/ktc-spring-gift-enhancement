@@ -86,10 +86,10 @@ public class MemberServiceImpl implements MemberService {
         String hash = rawPassword != null && !rawPassword.isBlank()
                 ? sha256(rawPassword)
                 : existingMember.getPassword().passwordHash();
-        Member updated = existingMember.withEmail(email)
-                .withPasswordHash(hash)
-                .withRole(newRole);
-        return memberRepository.save(updated);
+        existingMember.changeEmail(email);
+        existingMember.changePasswordHash(hash);
+        existingMember.changeRole(newRole);
+        return existingMember;
     }
 
     @Override

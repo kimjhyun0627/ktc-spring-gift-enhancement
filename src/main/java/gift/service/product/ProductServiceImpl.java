@@ -60,14 +60,14 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductNotFoundException(id);
         }
 
-        Product updated = existingProduct.withName(name)
-                .withPrice(price)
-                .withImageUrl(imageUrl);
+        existingProduct.changeName(name);
+        existingProduct.changePrice(price);
+        existingProduct.changeImageUrl(imageUrl);
 
         if (role.isUser() && isForbidden(name)) {
-            updated = updated.withHidden(true);
+            existingProduct.changeHidden(true);
         }
-        return repo.save(updated);
+        return existingProduct;
     }
 
     @Override

@@ -149,7 +149,6 @@ class ProductServiceTest {
     @DisplayName("updateProduct: 일반 사용자, 금지된 새 이름 숨김 처리")
     void updateProduct_userForbiddenNewName_hides() {
         when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(visibleProduct));
-        when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         Product result = service.updateProduct(1L, "카카오톡", 150, "http://image.png", USER);
 
@@ -160,7 +159,6 @@ class ProductServiceTest {
     @DisplayName("updateProduct: 관리자, 항상 업데이트")
     void updateProduct_adminAlwaysUpdates() {
         when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(visibleProduct));
-        when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         Product result = service.updateProduct(1L, "NewName", 150, "http://image.png", ADMIN);
 

@@ -4,6 +4,7 @@ import gift.entity.member.Member;
 import gift.entity.product.Product;
 import gift.entity.wish.value.Amount;
 import gift.entity.wish.value.WishId;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,6 +26,7 @@ public class Wish {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -84,6 +86,10 @@ public class Wish {
         return this.product.getId().id().equals(productId);
     }
 
+    public void changeAmount(int amount) {
+        this.amount = new Amount(amount);
+    }
+
     public WishId getId() {
         return new WishId(id);
     }
@@ -109,10 +115,5 @@ public class Wish {
             return false;
         }
         return Objects.equals(id, w.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }

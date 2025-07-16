@@ -183,7 +183,6 @@ class MemberServiceTest {
         void updateMemberAsAdmin() {
             Member updated = existing.withEmail("new@t.com").withRole(Role.ADMIN);
             given(memberRepo.findById(1L)).willReturn(Optional.of(existing));
-            given(memberRepo.save(any())).willReturn(updated);
 
             Member res = service.updateMember(1L, "new@t.com", null, ADMIN, ADMIN);
 
