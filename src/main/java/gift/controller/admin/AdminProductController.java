@@ -1,5 +1,8 @@
 package gift.controller.admin;
 
+import static gift.constant.PaginationConst.PRODUCT_PAGE_KEY;
+import static gift.constant.PaginationConst.PRODUCT_PAGE_SIZE;
+
 import gift.annotation.CurrentRole;
 import gift.dto.product.ProductForm;
 import gift.entity.member.value.Role;
@@ -8,6 +11,10 @@ import gift.exception.custom.ProductNotFoundException;
 import gift.service.product.ProductService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,13 +38,22 @@ public class AdminProductController {
     }
 
     @GetMapping
-    public String list(@CurrentRole Role role, Model model) {
-        model.addAttribute("products", productService.getAllProducts(role));
+    public String list(
+            @CurrentRole Role role,
+            @PageableDefault(size = PRODUCT_PAGE_SIZE, sort = PRODUCT_PAGE_KEY, direction = Sort.Direction.ASC) Pageable pageable,
+            Model model
+    ) {
+        Page<Product> productsPage = productService.getAllProducts(pageable, role);
+
+        model.addAttribute("productsPage", productsPage);
+        model.addAttribute("products", productsPage.getContent());
+
         return "admin/product_list";
     }
 
+
     @GetMapping("/new")
-    public String createForm(@CurrentRole Role role, Model model) {
+    public String createForm(Model model) {
         model.addAttribute("productForm", new ProductForm(null, "", null, ""));
         return "admin/product_form";
     }
