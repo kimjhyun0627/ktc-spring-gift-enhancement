@@ -13,8 +13,9 @@ import gift.exception.custom.WishNotFoundException;
 import gift.repository.wish.WishRepository;
 import gift.service.member.MemberService;
 import gift.service.product.ProductService;
-import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +39,10 @@ public class WishServiceImpl implements WishService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Wish> getWishes(Member member) {
+    public Page<Wish> getWishes(Member member, Pageable pageable) {
         memberService.getMemberById(member.getId().id(), Role.ADMIN)
                 .orElseThrow(() -> new MemberNotFoundException(member.getEmail().email()));
-        return wishRepository.findByMember_Id(member.getId().id());
+        return wishRepository.findByMember_Id(member.getId().id(), pageable);
     }
 
     @Override
