@@ -6,13 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import gift.entity.member.Member;
 import gift.entity.product.Product;
 import gift.entity.wish.Wish;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 class WishRepositoryTest {
@@ -49,9 +51,10 @@ class WishRepositoryTest {
         assertThat(saved.getAmount().amount()).isEqualTo(3);
     }
 
+
     @Test
-    @DisplayName("findByMember: 회원으로 조회")
-    void findByMember() {
+    @DisplayName("findByMember: 회원으로 조회 (페이징)")
+    void findByMember_withPaging() {
         Member member = createAndPersistMember("2");
         Product p1 = createAndPersistProduct(101L);
         Product p2 = createAndPersistProduct(102L);
@@ -59,10 +62,17 @@ class WishRepositoryTest {
         wishRepository.saveAndFlush(Wish.of(member, p1, 1));
         wishRepository.saveAndFlush(Wish.of(member, p2, 2));
 
-        List<Wish> list = wishRepository.findByMember_Id(member.getId().id());
-        assertThat(list).hasSize(2)
+        Pageable pageable = PageRequest.of(0, 10);  // 0페이지, 사이즈 10
+        Page<Wish> page = wishRepository.findByMember_Id(member.getId().id(), pageable);
+
+        assertThat(page.getContent()).hasSize(2)
                 .extracting(w -> w.getProduct().getId().id())
                 .containsExactlyInAnyOrder(101L, 102L);
+
+        assertThat(page.getTotalElements()).isEqualTo(2);
+        assertThat(page.getNumber()).isZero();
+        assertThat(page.getSize()).isEqualTo(10);
+        assertThat(page.getTotalPages()).isEqualTo(1);
     }
 
 
@@ -74,8 +84,7 @@ class WishRepositoryTest {
 
         wishRepository.saveAndFlush(Wish.of(member, product, 1));
 
-        assertThrows(DataIntegrityViolationException.class, () -> {
-            wishRepository.saveAndFlush(Wish.of(member, product, 2));
-        });
+        assertThrows(DataIntegrityViolationException.class,
+                () -> wishRepository.saveAndFlush(Wish.of(member, product, 2)));
     }
 }
