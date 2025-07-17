@@ -24,7 +24,7 @@
 * [X] 레포지토리 변경
 * [X] 서비스 변경
 * [X] 컨트롤러 변경
-* [ ] (시간이 남는다면) admin thymeleaf 변경
+* [X] admin thymeleaf 변경
 
 ---
 
