@@ -1,13 +1,18 @@
 package gift.controller.user;
 
+import static gift.constant.PaginationConst.WISH_PAGE_KEY;
+import static gift.constant.PaginationConst.WISH_PAGE_SIZE;
+
 import gift.annotation.LoginMember;
 import gift.dto.wish.WishRequest;
 import gift.dto.wish.WishResponse;
 import gift.entity.member.Member;
 import gift.entity.wish.Wish;
 import gift.service.wish.WishService;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,11 +33,17 @@ public class WishController {
     }
 
     @GetMapping
-    public List<WishResponse> list(@LoginMember Member member) {
-        System.out.println("memberId: " + member.getId().id());
-        return wishService.getWishes(member).stream()
-                .map(w -> WishResponse.of(w.getId(), w.getProduct().getId(), w.getAmount()))
-                .collect(Collectors.toList());
+    public Page<WishResponse> list(
+            @LoginMember Member member,
+            @PageableDefault(size = WISH_PAGE_SIZE, sort = WISH_PAGE_KEY, direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        return wishService.getWishes(member, pageable)
+                .map(w -> WishResponse.of(
+                        w.getId(),
+                        w.getProduct().getId(),
+                        w.getAmount()
+                ));
     }
 
     @PostMapping

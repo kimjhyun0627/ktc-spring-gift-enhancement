@@ -1,6 +1,8 @@
 package gift.controller.user;
 
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -28,6 +30,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -64,16 +68,19 @@ class ProductControllerTest {
     @DisplayName("GET /api/products - 일반 사용자, 숨김 제외 리스트 반환")
     void listProductsAsUser() throws Exception {
         Product visible = ProductFixture.visible(1L, "A", 10, "http://example.com/a.png");
-        Mockito.when(productService.getAllProducts(USER))
-                .thenReturn(List.of(visible));
+        // Page<Product> 로 래핑
+        PageImpl<Product> page = new PageImpl<>(List.of(visible));
+        Mockito.when(productService.getAllProducts(any(Pageable.class), eq(USER)))
+                .thenReturn(page);
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(USER);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(USER);
 
             mockMvc.perform(get("/api/products"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
-                    .andExpect(jsonPath("$[0].name", is("A")));
+                    // content 배열 크기 검증
+                    .andExpect(jsonPath("$.content", org.hamcrest.Matchers.hasSize(1)))
+                    .andExpect(jsonPath("$.content[0].name", is("A")));
         }
     }
 
@@ -82,16 +89,18 @@ class ProductControllerTest {
     void listProductsAsAdmin() throws Exception {
         Product visible = ProductFixture.visible(1L, "A", 10, "http://example.com/a.png");
         Product hidden = ProductFixture.hidden(2L, "B", 20, "http://example.com/b.png");
-        Mockito.when(productService.getAllProducts(ADMIN))
-                .thenReturn(List.of(visible, hidden));
+        // Page<Product> 로 래핑
+        PageImpl<Product> page = new PageImpl<>(List.of(visible, hidden));
+        Mockito.when(productService.getAllProducts(any(Pageable.class), eq(ADMIN)))
+                .thenReturn(page);
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(get("/api/products"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(2)))
-                    .andExpect(jsonPath("$[1].name", is("B")));
+                    .andExpect(jsonPath("$.content", org.hamcrest.Matchers.hasSize(2)))
+                    .andExpect(jsonPath("$.content[1].name", is("B")));
         }
     }
 
@@ -102,7 +111,7 @@ class ProductControllerTest {
                 .thenReturn(Optional.empty());
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(USER);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(USER);
 
             mockMvc.perform(get("/api/products/{id}", 2L))
                     .andExpect(status().isNotFound());
@@ -117,7 +126,7 @@ class ProductControllerTest {
                 .thenReturn(Optional.of(hidden));
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(get("/api/products/{id}", 2L))
                     .andExpect(status().isOk())
@@ -134,7 +143,7 @@ class ProductControllerTest {
         ).thenThrow(new gift.exception.custom.ProductNotFoundException(null));
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(USER);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(USER);
 
             mockMvc.perform(post("/api/products")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -153,7 +162,7 @@ class ProductControllerTest {
         ).thenReturn(created);
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(post("/api/products")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -173,7 +182,7 @@ class ProductControllerTest {
         ).thenThrow(new gift.exception.custom.ProductNotFoundException(2L));
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(USER);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(USER);
 
             mockMvc.perform(put("/api/products/{id}", 2L)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -193,7 +202,7 @@ class ProductControllerTest {
         ).thenReturn(updated);
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(put("/api/products/{id}", 2L)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -210,7 +219,7 @@ class ProductControllerTest {
                 .when(productService).deleteProduct(2L, USER);
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(USER);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(USER);
 
             mockMvc.perform(delete("/api/products/{id}", 2L))
                     .andExpect(status().isNotFound());
@@ -223,7 +232,7 @@ class ProductControllerTest {
         Mockito.doNothing().when(productService).deleteProduct(2L, ADMIN);
 
         try (MockedStatic<RoleUtil> utilities = Mockito.mockStatic(RoleUtil.class)) {
-            utilities.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            utilities.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(delete("/api/products/{id}", 2L))
                     .andExpect(status().isNoContent());
