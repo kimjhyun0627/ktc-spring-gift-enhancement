@@ -1,10 +1,16 @@
 package gift.entity.member.value;
 
 import gift.exception.custom.InvalidMemberException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public record MemberEmail(String email) {
+@Embeddable
+public record MemberEmail(
+        @Column(name = "email", nullable = false, unique = true)
+        String email
+) {
 
     public static final String EMAIL_REGEX =
             "^[\\w-.]+@[\\w-]+\\.[a-zA-Z]{2,}$";

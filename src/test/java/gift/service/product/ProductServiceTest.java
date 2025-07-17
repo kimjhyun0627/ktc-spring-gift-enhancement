@@ -9,6 +9,7 @@ import static org.mockito.BDDMockito.when;
 
 import gift.entity.member.value.Role;
 import gift.entity.product.Product;
+import gift.entity.product.value.ProductId;
 import gift.exception.custom.ProductNotFoundException;
 import gift.fixture.ProductFixture;
 import gift.repository.product.ProductRepository;
@@ -68,7 +69,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("getProductById: 일반 사용자, 숨김 상품 접근 시 예외")
     void getProductById_userCannotSeeHidden() {
-        when(repo.findById(2L)).thenReturn(Optional.of(hiddenProduct));
+        when(repo.findById(new ProductId(2L))).thenReturn(Optional.of(hiddenProduct));
 
         assertThatThrownBy(() -> service.getProductById(2L, USER))
                 .isInstanceOf(ProductNotFoundException.class);
@@ -77,7 +78,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("getProductById: 일반 사용자, 노출 상품 조회 성공")
     void getProductById_userSeesVisible() {
-        when(repo.findById(1L)).thenReturn(Optional.of(visibleProduct));
+        when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(visibleProduct));
 
         Optional<Product> result = service.getProductById(1L, USER);
 
@@ -87,7 +88,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("getProductById: 관리자, 숨김 상품 조회 성공")
     void getProductById_adminSeesHidden() {
-        when(repo.findById(2L)).thenReturn(Optional.of(hiddenProduct));
+        when(repo.findById(new ProductId(2L))).thenReturn(Optional.of(hiddenProduct));
 
         Optional<Product> result = service.getProductById(2L, ADMIN);
 
@@ -97,7 +98,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("getProductById: 없는 상품 조회 시 예외")
     void getProductById_missing_throws() {
-        when(repo.findById(99L)).thenReturn(Optional.empty());
+        when(repo.findById(new ProductId(99L))).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getProductById(99L, ADMIN))
                 .isInstanceOf(ProductNotFoundException.class);
@@ -110,8 +111,8 @@ class ProductServiceTest {
 
         Product result = service.createProduct("카카오톡", 300, "http://image.png", USER);
 
-        assertThat(result.hidden()).isTrue();
-        then(repo).should().save(argThat(Product::hidden));
+        assertThat(result.isHidden()).isTrue();
+        then(repo).should().save(argThat(Product::isHidden));
     }
 
     @Test
@@ -121,7 +122,7 @@ class ProductServiceTest {
 
         Product result = service.createProduct("Normal", 100, "http://image.png", USER);
 
-        assertThat(result.hidden()).isFalse();
+        assertThat(result.isHidden()).isFalse();
     }
 
     @Test
@@ -131,13 +132,13 @@ class ProductServiceTest {
 
         Product result = service.createProduct("카카오톡", 300, "http://image.png", ADMIN);
 
-        assertThat(result.hidden()).isFalse();
+        assertThat(result.isHidden()).isFalse();
     }
 
     @Test
     @DisplayName("updateProduct: 일반 사용자, 숨김 상품 수정 시 예외")
     void updateProduct_userCannotUpdateHidden() {
-        when(repo.findById(2L)).thenReturn(Optional.of(hiddenProduct));
+        when(repo.findById(new ProductId(2L))).thenReturn(Optional.of(hiddenProduct));
 
         assertThatThrownBy(() ->
                 service.updateProduct(2L, "New", 150, "http://image.png", USER))
@@ -147,29 +148,27 @@ class ProductServiceTest {
     @Test
     @DisplayName("updateProduct: 일반 사용자, 금지된 새 이름 숨김 처리")
     void updateProduct_userForbiddenNewName_hides() {
-        when(repo.findById(1L)).thenReturn(Optional.of(visibleProduct));
-        when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(visibleProduct));
 
         Product result = service.updateProduct(1L, "카카오톡", 150, "http://image.png", USER);
 
-        assertThat(result.hidden()).isTrue();
+        assertThat(result.isHidden()).isTrue();
     }
 
     @Test
     @DisplayName("updateProduct: 관리자, 항상 업데이트")
     void updateProduct_adminAlwaysUpdates() {
-        when(repo.findById(1L)).thenReturn(Optional.of(visibleProduct));
-        when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(visibleProduct));
 
         Product result = service.updateProduct(1L, "NewName", 150, "http://image.png", ADMIN);
 
-        assertThat(result.name().name()).isEqualTo("NewName");
+        assertThat(result.getName().name()).isEqualTo("NewName");
     }
 
     @Test
     @DisplayName("deleteProduct: 일반 사용자, 숨김 상품 삭제 시 예외")
     void deleteProduct_userCannotDeleteHidden() {
-        when(repo.findById(2L)).thenReturn(Optional.of(hiddenProduct));
+        when(repo.findById(new ProductId(2L))).thenReturn(Optional.of(hiddenProduct));
 
         assertThatThrownBy(() -> service.deleteProduct(2L, USER))
                 .isInstanceOf(ProductNotFoundException.class);
@@ -178,11 +177,11 @@ class ProductServiceTest {
     @Test
     @DisplayName("deleteProduct: 관리자, 상품 삭제 성공")
     void deleteProduct_adminDeletes() {
-        when(repo.findById(1L)).thenReturn(Optional.of(visibleProduct));
+        when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(visibleProduct));
 
         service.deleteProduct(1L, ADMIN);
 
-        then(repo).should().deleteById(1L);
+        then(repo).should().deleteById(new ProductId(1L));
     }
 
     @Test
@@ -197,12 +196,12 @@ class ProductServiceTest {
     @Test
     @DisplayName("hideProduct/unhideProduct: 관리자, 숨김 플래그 변경")
     void hideUnhide_asAdmin_changesHiddenFlag() {
-        when(repo.findById(1L)).thenReturn(Optional.of(visibleProduct));
+        when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(visibleProduct));
         service.hideProduct(1L, ADMIN);
-        then(repo).should().save(argThat(Product::hidden));
+        then(repo).should().save(argThat(Product::isHidden));
 
-        when(repo.findById(1L)).thenReturn(Optional.of(hiddenProduct));
+        when(repo.findById(new ProductId(1L))).thenReturn(Optional.of(hiddenProduct));
         service.unhideProduct(1L, ADMIN);
-        then(repo).should().save(argThat(p -> !p.hidden()));
+        then(repo).should().save(argThat(p -> !p.isHidden()));
     }
 }

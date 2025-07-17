@@ -5,15 +5,34 @@ import gift.entity.product.value.ProductId;
 import gift.entity.product.value.ProductImageUrl;
 import gift.entity.product.value.ProductName;
 import gift.entity.product.value.ProductPrice;
-import java.util.Objects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "product")
 public class Product {
 
-    private final ProductId id;
-    private final ProductName name;
-    private final ProductPrice price;
-    private final ProductImageUrl imageUrl;
-    private final boolean hidden;
+    @EmbeddedId
+    private ProductId id;
+
+    @Embedded
+    private ProductName name;
+
+    @Embedded
+    private ProductPrice price;
+
+    @Embedded
+    private ProductImageUrl imageUrl;
+
+    @Column(name = "hidden", nullable = false)
+    private boolean hidden;
+
+    protected Product() {
+
+    }
 
     private Product(ProductId id, ProductName name, ProductPrice price, ProductImageUrl imageUrl,
             boolean hidden) {
@@ -68,43 +87,43 @@ public class Product {
         return new Product(id, name, price, imageUrl, newHidden);
     }
 
+    public void changeName(String newName) {
+        this.name = new ProductName(newName);
+    }
+
+    public void changePrice(int newPrice) {
+        this.price = new ProductPrice(newPrice);
+    }
+
+    public void changeImageUrl(String newUrl) {
+        this.imageUrl = new ProductImageUrl(newUrl);
+    }
+
+    public void changeHidden(boolean newHidden) {
+        this.hidden = newHidden;
+    }
+    
     public ProductResponse toResponse() {
         return new ProductResponse(id.id(), name.name(), price.price(), imageUrl.url());
     }
 
-    public ProductId id() {
+    public ProductId getId() {
         return id;
     }
 
-    public ProductName name() {
+    public ProductName getName() {
         return name;
     }
 
-    public ProductPrice price() {
+    public ProductPrice getPrice() {
         return price;
     }
 
-    public ProductImageUrl imageUrl() {
+    public ProductImageUrl getImageUrl() {
         return imageUrl;
     }
 
-    public boolean hidden() {
+    public boolean isHidden() {
         return hidden;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Product other)) {
-            return false;
-        }
-        return Objects.equals(id, other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }

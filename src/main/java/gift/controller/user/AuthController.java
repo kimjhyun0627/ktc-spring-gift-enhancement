@@ -4,6 +4,7 @@ import gift.dto.member.AuthRequest;
 import gift.dto.member.AuthResponse;
 import gift.service.member.MemberService;
 import gift.util.BasicAuthUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,20 +23,20 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest authRequest) {
-        AuthResponse resp = memberService.register(authRequest);
-        return ResponseEntity.status(201).body(resp);
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRequest authRequest) {
+        AuthResponse authResponse = memberService.register(authRequest);
+        return ResponseEntity.status(201).body(authResponse);
     }
 
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @RequestHeader("Authorization") String authHeader) {
-        BasicAuthUtil.Credentials cred = BasicAuthUtil.parse(authHeader);
-        String email = cred.email();
-        String password = cred.password();
+        BasicAuthUtil.Credentials parsed = BasicAuthUtil.parse(authHeader);
+        String email = parsed.email();
+        String password = parsed.password();
 
-        AuthResponse resp = memberService.login(email, password);
-        return ResponseEntity.ok(resp);
+        AuthResponse authResponse = memberService.login(email, password);
+        return ResponseEntity.ok(authResponse);
     }
 }

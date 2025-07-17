@@ -1,20 +1,10 @@
 package gift.repository.member;
 
 import gift.entity.member.Member;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MemberRepository {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Member register(Member member);
-
-    Member updateMember(Member member);
-
-    Optional<Member> findByEmail(String email);
-
-    List<Member> findAll();
-
-    Optional<Member> findById(Long id);
-
-    void deleteById(Long id);
+    Optional<Member> findByEmail_Email(String email);
 }

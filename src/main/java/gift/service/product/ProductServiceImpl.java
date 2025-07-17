@@ -4,6 +4,7 @@ import static gift.entity.product.value.ProductName.FORBIDDEN_PATTERNS;
 
 import gift.entity.member.value.Role;
 import gift.entity.product.Product;
+import gift.entity.product.value.ProductId;
 import gift.exception.custom.ProductNotFoundException;
 import gift.repository.product.ProductRepository;
 import java.util.List;
@@ -23,23 +24,23 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getAllProducts(Role role) {
-        List<Product> all = repo.findAll();
+        List<Product> products = repo.findAll();
         if (role.isUser()) {
-            return all.stream()
-                    .filter(p -> !p.hidden())
+            return products.stream()
+                    .filter(p -> !p.isHidden())
                     .toList();
         }
-        return all;
+        return products;
     }
 
     @Override
     public Optional<Product> getProductById(Long id, Role role) {
-        Optional<Product> opt = repo.findById(id);
-        Product p = opt.orElseThrow(() -> new ProductNotFoundException(id));
-        if (role.isUser() && p.hidden()) {
+        Optional<Product> optionalProduct = repo.findById(new ProductId(id));
+        Product product = optionalProduct.orElseThrow(() -> new ProductNotFoundException(id));
+        if (role.isUser() && product.isHidden()) {
             throw new ProductNotFoundException(id);
         }
-        return Optional.of(p);
+        return Optional.of(product);
     }
 
     @Override
@@ -53,30 +54,30 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product updateProduct(Long id, String name, int price, String imageUrl, Role role) {
-        Product existing = repo.findById(id)
+        Product existingProduct = repo.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        if (role.isUser() && existing.hidden()) {
+        if (role.isUser() && existingProduct.isHidden()) {
             throw new ProductNotFoundException(id);
         }
 
-        Product updated = existing.withName(name)
-                .withPrice(price)
-                .withImageUrl(imageUrl);
+        existingProduct.changeName(name);
+        existingProduct.changePrice(price);
+        existingProduct.changeImageUrl(imageUrl);
 
         if (role.isUser() && isForbidden(name)) {
-            updated = updated.withHidden(true);
+            existingProduct.changeHidden(true);
         }
-        return repo.save(updated);
+        return existingProduct;
     }
 
     @Override
     public void deleteProduct(Long id, Role role) {
-        Product existing = repo.findById(id)
+        Product targetProduct = repo.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        if (role.isUser() && existing.hidden()) {
+        if (role.isUser() && targetProduct.isHidden()) {
             throw new ProductNotFoundException(id);
         }
-        repo.deleteById(id);
+        repo.deleteById(new ProductId(id));
     }
 
     @Override
@@ -84,9 +85,9 @@ public class ProductServiceImpl implements ProductService {
         if (role.isUser()) {
             throw new ProductNotFoundException(id);
         }
-        Product p = repo.findById(id)
+        Product targetProduct = repo.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        repo.save(p.withHidden(true));
+        repo.save(targetProduct.withHidden(true));
     }
 
     @Override
@@ -94,9 +95,9 @@ public class ProductServiceImpl implements ProductService {
         if (role.isUser()) {
             throw new ProductNotFoundException(id);
         }
-        Product p = repo.findById(id)
+        Product targetProduct = repo.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        repo.save(p.withHidden(false));
+        repo.save(targetProduct.withHidden(false));
     }
 
     private boolean isForbidden(String name) {

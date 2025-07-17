@@ -30,30 +30,30 @@ public class WishController {
     @GetMapping
     public List<WishResponse> list(@LoginMember Member member) {
         System.out.println("memberId: " + member.getId().id());
-        return wishService.getWishes(member.getId().id()).stream()
-                .map(w -> WishResponse.of(w.getId(), w.getProductId(), w.getAmount()))
+        return wishService.getWishes(member).stream()
+                .map(w -> WishResponse.of(w.getId(), w.getProduct().getId(), w.getAmount()))
                 .collect(Collectors.toList());
     }
 
     @PostMapping
     public WishResponse create(@RequestBody WishRequest request,
             @LoginMember Member member) {
-        Wish w = wishService.addWish(member.getId().id(), request.productId(), request.amount());
-        return WishResponse.of(w.getId(), w.getProductId(), w.getAmount());
+        Wish wish = wishService.addWish(member, request.productId(), request.amount());
+        return WishResponse.of(wish.getId(), wish.getProduct().getId(), wish.getAmount());
     }
 
     @PutMapping("/{wishId}")
     public WishResponse update(@PathVariable("wishId") Long wishId,
             @RequestBody WishRequest request,
             @LoginMember Member member) {
-        Wish wish = wishService.updateWish(wishId, member.getId().id(), request.productId(),
+        Wish wish = wishService.changeWishAmount(wishId, member, request.productId(),
                 request.amount());
-        return WishResponse.of(wish.getId(), wish.getProductId(), wish.getAmount());
+        return WishResponse.of(wish.getId(), wish.getProduct().getId(), wish.getAmount());
     }
 
     @DeleteMapping("/{wishId}")
     public void delete(@PathVariable Long wishId,
             @LoginMember Member member) {
-        wishService.removeWish(member.getId().id(), wishId);
+        wishService.removeWish(wishId, member);
     }
 }

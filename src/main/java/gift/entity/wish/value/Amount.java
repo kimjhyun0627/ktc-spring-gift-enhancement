@@ -1,8 +1,14 @@
 package gift.entity.wish.value;
 
 import gift.exception.custom.InvalidWishException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
-public record Amount(int amount) {
+@Embeddable
+public record Amount(
+        @Column(name = "amount", nullable = false)
+        int amount
+) {
 
     public Amount {
         if (amount < 1) {

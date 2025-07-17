@@ -1,62 +1,70 @@
 package gift.entity.wish;
 
-import gift.entity.member.value.MemberId;
+import gift.entity.member.Member;
+import gift.entity.product.Product;
 import gift.entity.wish.value.Amount;
-import gift.entity.wish.value.ProductId;
 import gift.entity.wish.value.WishId;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import java.util.Objects;
 
+@Entity
+@Table(
+        name = "wish",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "product_id"})
+)
 public class Wish {
 
-    private WishId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false)
+    private Long id;
 
-    private MemberId memberId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
-    private ProductId productId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
+    @Embedded
     private Amount amount;
 
     protected Wish() {
+
     }
 
-    private Wish(WishId id, MemberId member, ProductId productId, Amount amount) {
+    private Wish(Long id, Member member, Product product, Amount amount) {
         this.id = id;
-        this.memberId = member;
-        this.productId = productId;
+        this.member = member;
+        this.product = product;
         this.amount = amount;
     }
 
-    public static Wish of(Long memberId, Long productId, int amount) {
+    public static Wish of(Member member, Product product, int quantity) {
         return new Wish(
                 null,
-                new MemberId(memberId),
-                new ProductId(productId),
-                new Amount(amount)
+                member,
+                product,
+                new Amount(quantity)
         );
     }
 
-    public Wish withId(Long id) {
+    public Wish withId(Long newId) {
         return new Wish(
-                new WishId(id),
-                this.memberId,
-                this.productId,
-                this.amount
-        );
-    }
-
-    public Wish withMember(Long memberId) {
-        return new Wish(
-                this.id,
-                new MemberId(memberId),
-                this.productId,
-                this.amount
-        );
-    }
-
-    public Wish withProductId(Long productId) {
-        return new Wish(
-                this.id,
-                this.memberId,
-                new ProductId(productId),
+                new WishId(newId).id(),
+                this.member,
+                this.product,
                 this.amount
         );
     }
@@ -64,33 +72,48 @@ public class Wish {
     public Wish withAmount(int amount) {
         return new Wish(
                 this.id,
-                this.memberId,
-                this.productId,
+                this.member,
+                this.product,
                 new Amount(amount)
         );
     }
 
-    public boolean isOwnedBy(Long memberId) {
-        return this.memberId.id().equals(memberId);
+    public boolean isOwnedBy(Member member) {
+        return this.member.getId().id().equals(member.getId().id());
     }
 
     public boolean isForProduct(Long productId) {
-        return this.productId.productId().equals(productId);
+        return this.product.getId().id().equals(productId);
+    }
+
+    public void changeAmount(int amount) {
+        this.amount = new Amount(amount);
     }
 
     public WishId getId() {
-        return id == null ? null : new WishId(id.id());
+        return new WishId(id);
     }
 
-    public MemberId getMemberId() {
-        return memberId;
+    public Member getMember() {
+        return member;
     }
 
-    public ProductId getProductId() {
-        return new ProductId(productId.productId());
+    public Product getProduct() {
+        return product;
     }
 
     public Amount getAmount() {
-        return new Amount(amount.amount());
+        return amount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Wish w)) {
+            return false;
+        }
+        return Objects.equals(id, w.id);
     }
 }

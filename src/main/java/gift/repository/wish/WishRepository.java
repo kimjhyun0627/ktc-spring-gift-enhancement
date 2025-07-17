@@ -1,18 +1,12 @@
 package gift.repository.wish;
 
-import gift.entity.member.value.MemberId;
 import gift.entity.wish.Wish;
 import java.util.List;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface WishRepository {
+public interface WishRepository extends JpaRepository<Wish, Long> {
 
-    List<Wish> findByMember(MemberId memberId);
-
-    Wish findById(long id);
-
-    Wish create(Wish wish);
-
-    Wish update(Wish wish);
-
-    void delete(Long id);
+    @EntityGraph(attributePaths = {"member", "product"})
+    List<Wish> findByMember_Id(Long memberId);
 }

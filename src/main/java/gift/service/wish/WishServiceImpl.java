@@ -8,11 +8,13 @@ import gift.exception.custom.InvalidProductException;
 import gift.exception.custom.MemberNotFoundException;
 import gift.exception.custom.ProductNotFoundException;
 import gift.exception.custom.UnauthorizedWishAccessException;
+import gift.exception.custom.WishAlreadyExistsException;
 import gift.exception.custom.WishNotFoundException;
 import gift.repository.wish.WishRepository;
 import gift.service.member.MemberService;
 import gift.service.product.ProductService;
 import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,45 +36,55 @@ public class WishServiceImpl implements WishService {
         this.memberService = memberService;
     }
 
+    @Override
     @Transactional(readOnly = true)
-    public List<Wish> getWishes(Long memberId) {
-        Member member = memberService.getMemberById(memberId, Role.ADMIN)
-                .orElseThrow(() -> new MemberNotFoundException(memberId));
-        return wishRepository.findByMember(member.getId());
+    public List<Wish> getWishes(Member member) {
+        memberService.getMemberById(member.getId().id(), Role.ADMIN)
+                .orElseThrow(() -> new MemberNotFoundException(member.getEmail().email()));
+        return wishRepository.findByMember_Id(member.getId().id());
     }
 
-    public Wish addWish(Long memberId, Long productId, int amount) {
-        Member member = memberService.getMemberById(memberId, Role.ADMIN)
-                .orElseThrow(() -> new MemberNotFoundException(memberId));
+    @Override
+    @Transactional
+    public Wish addWish(Member member, Long productId, int amount) {
+        memberService.getMemberById(member.getId().id(), Role.ADMIN)
+                .orElseThrow(() -> new MemberNotFoundException(member.getEmail().email()));
 
-        Product existing = productService.getProductById(productId, member.getRole())
+        Product existingProduct = productService.getProductById(productId, member.getRole())
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
-        return wishRepository.create(
-                Wish.of(member.getId().id(), existing.id().id(), amount)
-        );
+        Wish newWish = Wish.of(member, existingProduct, amount);
+        try {
+            return wishRepository.save(newWish);
+        } catch (DataIntegrityViolationException e) {
+            throw new WishAlreadyExistsException("해당하는 위시리스트가 이미 존재합니다");
+        }
     }
 
-    public Wish updateWish(Long id, Long memberId, Long productId, int amount) {
-        Wish existing = wishRepository.findById(id);
-        if (existing == null) {
-            throw new WishNotFoundException(id);
+    @Override
+    @Transactional
+    public Wish changeWishAmount(Long wishId, Member member, Long productId, int amount) {
+        Wish existingWish = wishRepository.findById(wishId)
+                .orElseThrow(() -> new WishNotFoundException(wishId));
+        if (!existingWish.isOwnedBy(member)) {
+            throw new UnauthorizedWishAccessException(member.getId().id(),
+                    existingWish.getMember().getId().id());
         }
-        if (!existing.isOwnedBy(memberId)) {
-            throw new UnauthorizedWishAccessException(memberId, id);
-        }
-        if (!existing.isForProduct(productId)) {
+        if (!existingWish.isForProduct(productId)) {
             throw new InvalidProductException("상품의 수량만 변경 가능합니다: " + productId);
         }
-        existing.withAmount(amount);
-        return wishRepository.update(existing);
+        existingWish.changeAmount(amount);
+        return existingWish;
     }
 
-    public void removeWish(Long memberId, Long wishId) {
-        Wish wish = wishRepository.findById(wishId);
-        if (!wish.isOwnedBy(memberId)) {
-            throw new UnauthorizedWishAccessException(memberId, wish.getId().id());
+    @Override
+    public void removeWish(Long wishId, Member member) {
+        Wish targetWish = wishRepository.findById(wishId)
+                .orElseThrow(() -> new WishNotFoundException(wishId));
+
+        if (!targetWish.isOwnedBy(member)) {
+            throw new UnauthorizedWishAccessException(member.getId().id(), targetWish.getId().id());
         }
-        wishRepository.delete(wish.getId().id());
+        wishRepository.delete(targetWish);
     }
 }

@@ -8,6 +8,6 @@ public class UnauthorizedWishAccessException extends BaseException {
 
     public UnauthorizedWishAccessException(Long memberId, Long wishId) {
         super(ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED,
-                "유효하지 않은 접근입니다: ID " + memberId + " != " + wishId);
+                "유효하지 않은 접근입니다: memberID " + memberId + " != " + wishId);
     }
 }

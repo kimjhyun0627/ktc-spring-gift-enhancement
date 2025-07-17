@@ -1,11 +1,17 @@
 package gift.entity.product.value;
 
 import gift.exception.custom.InvalidProductException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public record ProductName(String name) {
+@Embeddable
+public record ProductName(
+        @Column(name = "name", length = MAX_LENGTH, nullable = false)
+        String name
+) {
 
     public static final int MAX_LENGTH = 15;
 

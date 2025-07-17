@@ -1,5 +1,6 @@
 package gift.controller.admin;
 
+import static gift.util.HashUtil.sha256;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -19,7 +20,6 @@ import gift.entity.member.Member;
 import gift.entity.member.value.Role;
 import gift.fixture.MemberFixture;
 import gift.service.member.MemberService;
-import gift.service.member.MemberServiceImpl;
 import gift.util.BearerAuthUtil;
 import gift.util.JwtUtil;
 import java.util.List;
@@ -102,7 +102,7 @@ class AdminMemberControllerTest {
         @DisplayName("유효한 입력 - 생성 후 리다이렉트")
         void 생성_성공() throws Exception {
             String raw = "abcdef";
-            String hash = MemberServiceImpl.sha256(raw);
+            String hash = sha256(raw);
             Member created = MemberFixture.newRegisteredMember(
                     1L,
                     "new@ex.com",
@@ -150,7 +150,7 @@ class AdminMemberControllerTest {
             Member existing = MemberFixture.newRegisteredMember(
                     5L,
                     "e@e.com",
-                    MemberServiceImpl.sha256("password"),
+                    sha256("passwordHash"),
                     Role.ADMIN
             );
             given(memberService.getMemberById(5L, ADMIN))
@@ -164,7 +164,7 @@ class AdminMemberControllerTest {
                             is(new gift.dto.member.MemberForm(
                                     5L,
                                     "e@e.com",
-                                    existing.getPassword().password(),
+                                    existing.getPassword().passwordHash(),
                                     Role.ADMIN
                             ))
                     ));
@@ -192,7 +192,7 @@ class AdminMemberControllerTest {
             Member updated = MemberFixture.newRegisteredMember(
                     5L,
                     "up@up.com",
-                    MemberServiceImpl.sha256("newpass"),
+                    sha256("newpass"),
                     Role.USER
             );
             given(memberService.updateMember(
@@ -217,7 +217,7 @@ class AdminMemberControllerTest {
             mockMvc.perform(put("/admin/members/5")
                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                             .param("email", "")
-                            .param("password", "123")
+                            .param("passwordHash", "123")
                             .param("role", "")
                             .requestAttr("authClaims", TestUtils.mockClaims(String.valueOf(ADMIN))))
                     .andExpect(status().isOk())

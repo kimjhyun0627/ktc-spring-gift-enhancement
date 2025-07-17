@@ -71,10 +71,10 @@ public class AdminProductController {
         Product p = productService.getProductById(id, role)
                 .orElseThrow(() -> new ProductNotFoundException(id));
         ProductForm form = new ProductForm(
-                p.id().id(),
-                p.name().name(),
-                p.price().price(),
-                p.imageUrl().url()
+                p.getId().id(),
+                p.getName().name(),
+                p.getPrice().price(),
+                p.getImageUrl().url()
         );
         model.addAttribute("productForm", form);
         return "admin/product_form";

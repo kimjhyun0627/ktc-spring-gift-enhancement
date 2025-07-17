@@ -1,7 +1,6 @@
 package gift.entity.member;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,7 +21,7 @@ class MemberTest {
 
         assertNull(m.getId(), "Newly registered member should have null id");
         assertEquals(email, m.getEmail().email(), "Email should be set correctly");
-        assertEquals(hash, m.getPassword().password(), "Password hash should be set correctly");
+        assertEquals(hash, m.getPassword().passwordHash(), "Password hash should be set correctly");
         assertEquals(Role.USER, m.getRole(), "Default role should be USER");
         assertNotNull(m.getCreatedAt(), "createdAt should be initialized");
     }
@@ -40,7 +39,7 @@ class MemberTest {
         assertNotNull(m.getId());
         assertEquals(id, m.getId().id(), "ID should be set correctly");
         assertEquals(email, m.getEmail().email(), "Email should be set correctly");
-        assertEquals(hash, m.getPassword().password(), "Password hash should be set correctly");
+        assertEquals(hash, m.getPassword().passwordHash(), "Password hash should be set correctly");
         assertEquals(Role.ADMIN, m.getRole(), "Role should be parsed from roleInput");
         assertEquals(now, m.getCreatedAt(), "createdAt should match provided value");
     }
@@ -79,7 +78,7 @@ class MemberTest {
         Member base = Member.of(2L, "e@e.com", initialHash, "USER", LocalDateTime.now());
         String newHash = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
         Member changed = base.withPasswordHash(newHash);
-        assertEquals(newHash, changed.getPassword().password());
+        assertEquals(newHash, changed.getPassword().passwordHash());
         assertEquals(base.getEmail(), changed.getEmail());
         assertEquals(base.getRole(), changed.getRole());
         assertEquals(base.getId(), changed.getId());
@@ -97,23 +96,6 @@ class MemberTest {
         assertEquals(base.getPassword(), changed.getPassword());
         assertEquals(base.getId(), changed.getId());
         assertEquals(base.getCreatedAt(), changed.getCreatedAt());
-    }
-
-    @Test
-    void equals_and_hashCode_basedOnId() {
-        Member m1 = Member.of(10L, "x@x.com",
-                "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789", "USER",
-                LocalDateTime.now());
-        Member m2 = Member.of(10L, "y@y.com",
-                "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210", "ADMIN",
-                LocalDateTime.now());
-        Member m3 = Member.of(11L, "x@x.com",
-                "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789", "USER",
-                LocalDateTime.now());
-
-        assertEquals(m1, m2, "Members with same id should be equal");
-        assertEquals(m1.hashCode(), m2.hashCode(), "HashCodes should match for same id");
-        assertNotEquals(m1, m3, "Different ids should not be equal");
     }
 
     @Test

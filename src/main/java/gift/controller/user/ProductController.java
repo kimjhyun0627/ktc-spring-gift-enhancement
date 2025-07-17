@@ -45,19 +45,19 @@ public class ProductController {
     public ResponseEntity<ProductResponse> getById(
             HttpServletRequest httpServletRequest,
             @PathVariable Long id) {
-        Product p = productService.getProductById(id, extractRole(httpServletRequest))
+        Product product = productService.getProductById(id, extractRole(httpServletRequest))
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        return ResponseEntity.ok(p.toResponse());
+        return ResponseEntity.ok(product.toResponse());
     }
 
     @PostMapping
     public ResponseEntity<ProductResponse> create(
             HttpServletRequest httpServletRequest,
             @Valid @RequestBody ProductRequest productRequest) {
-        Product saved = productService.createProduct(
+        Product product = productService.createProduct(
                 productRequest.name(), productRequest.price(), productRequest.imageUrl(),
                 extractRole(httpServletRequest));
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved.toResponse());
+        return ResponseEntity.status(HttpStatus.CREATED).body(product.toResponse());
     }
 
     @PutMapping("/{id}")
@@ -65,10 +65,10 @@ public class ProductController {
             HttpServletRequest httpServletRequest,
             @PathVariable Long id,
             @Valid @RequestBody ProductRequest productRequest) {
-        Product updated = productService.updateProduct(
+        Product product = productService.updateProduct(
                 id, productRequest.name(), productRequest.price(), productRequest.imageUrl(),
                 extractRole(httpServletRequest));
-        return ResponseEntity.ok(updated.toResponse());
+        return ResponseEntity.ok(product.toResponse());
     }
 
     @DeleteMapping("/{id}")
