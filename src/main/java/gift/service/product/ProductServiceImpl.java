@@ -7,8 +7,9 @@ import gift.entity.product.Product;
 import gift.entity.product.value.ProductId;
 import gift.exception.custom.ProductNotFoundException;
 import gift.repository.product.ProductRepository;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,26 +17,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ProductServiceImpl implements ProductService {
 
-    private final ProductRepository repo;
+    private final ProductRepository productRepository;
 
-    public ProductServiceImpl(ProductRepository repo) {
-        this.repo = repo;
+    public ProductServiceImpl(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
     @Override
-    public List<Product> getAllProducts(Role role) {
-        List<Product> products = repo.findAll();
+    public Page<Product> getAllProducts(Pageable pageable, Role role) {
         if (role.isUser()) {
-            return products.stream()
-                    .filter(p -> !p.isHidden())
-                    .toList();
+            return productRepository.findByHiddenFalse(pageable);
         }
-        return products;
+        return productRepository.findAll(pageable);
     }
 
     @Override
     public Optional<Product> getProductById(Long id, Role role) {
-        Optional<Product> optionalProduct = repo.findById(new ProductId(id));
+        Optional<Product> optionalProduct = productRepository.findById(new ProductId(id));
         Product product = optionalProduct.orElseThrow(() -> new ProductNotFoundException(id));
         if (role.isUser() && product.isHidden()) {
             throw new ProductNotFoundException(id);
@@ -49,12 +47,12 @@ public class ProductServiceImpl implements ProductService {
         if (role.isUser() && isForbidden(name)) {
             newProduct = newProduct.withHidden(true);
         }
-        return repo.save(newProduct);
+        return productRepository.save(newProduct);
     }
 
     @Override
     public Product updateProduct(Long id, String name, int price, String imageUrl, Role role) {
-        Product existingProduct = repo.findById(new ProductId(id))
+        Product existingProduct = productRepository.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
         if (role.isUser() && existingProduct.isHidden()) {
             throw new ProductNotFoundException(id);
@@ -72,12 +70,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(Long id, Role role) {
-        Product targetProduct = repo.findById(new ProductId(id))
+        Product targetProduct = productRepository.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
         if (role.isUser() && targetProduct.isHidden()) {
             throw new ProductNotFoundException(id);
         }
-        repo.deleteById(new ProductId(id));
+        productRepository.deleteById(new ProductId(id));
     }
 
     @Override
@@ -85,9 +83,9 @@ public class ProductServiceImpl implements ProductService {
         if (role.isUser()) {
             throw new ProductNotFoundException(id);
         }
-        Product targetProduct = repo.findById(new ProductId(id))
+        Product targetProduct = productRepository.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        repo.save(targetProduct.withHidden(true));
+        productRepository.save(targetProduct.withHidden(true));
     }
 
     @Override
@@ -95,9 +93,9 @@ public class ProductServiceImpl implements ProductService {
         if (role.isUser()) {
             throw new ProductNotFoundException(id);
         }
-        Product targetProduct = repo.findById(new ProductId(id))
+        Product targetProduct = productRepository.findById(new ProductId(id))
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        repo.save(targetProduct.withHidden(false));
+        productRepository.save(targetProduct.withHidden(false));
     }
 
     private boolean isForbidden(String name) {

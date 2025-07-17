@@ -22,6 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ProductServiceImpl 단위 테스트")
@@ -48,22 +51,26 @@ class ProductServiceTest {
     @Test
     @DisplayName("getAllProducts: 일반 사용자, 숨김 상품 제외")
     void getAllProducts_asUser_filtersHidden() {
-        when(repo.findAll()).thenReturn(List.of(visibleProduct, hiddenProduct));
+        when(repo.findByHiddenFalse(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(visibleProduct)));
 
-        List<Product> result = service.getAllProducts(USER);
+        Page<Product> resultPage = service.getAllProducts(Pageable.unpaged(), USER);
+        assertThat(resultPage.getContent())
+                .containsExactly(visibleProduct);
 
-        assertThat(result).containsExactly(visibleProduct);
-        then(repo).should().findAll();
+        then(repo).should().findByHiddenFalse(any(Pageable.class));
     }
 
     @Test
     @DisplayName("getAllProducts: 관리자, 모든 상품 반환")
     void getAllProducts_asAdmin_returnsAll() {
-        when(repo.findAll()).thenReturn(List.of(visibleProduct, hiddenProduct));
+        Page<Product> page = new PageImpl<>(List.of(visibleProduct, hiddenProduct));
+        when(repo.findAll(any(Pageable.class))).thenReturn(page);
 
-        List<Product> result = service.getAllProducts(ADMIN);
+        Page<Product> result = service.getAllProducts(Pageable.unpaged(), ADMIN);
 
-        assertThat(result).containsExactly(visibleProduct, hiddenProduct);
+        assertThat(result.getContent()).containsExactly(visibleProduct, hiddenProduct);
+        then(repo).should().findAll(any(Pageable.class));
     }
 
     @Test
