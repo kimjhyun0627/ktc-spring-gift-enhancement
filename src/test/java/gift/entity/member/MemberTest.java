@@ -41,7 +41,7 @@ class MemberTest {
         assertEquals(email, m.getEmail().email(), "Email should be set correctly");
         assertEquals(hash, m.getPassword().passwordHash(), "Password hash should be set correctly");
         assertEquals(Role.ADMIN, m.getRole(), "Role should be parsed from roleInput");
-        assertEquals(now, m.getCreatedAt(), "createdAt should match provided value");
+        assertEquals(now, m.getCreatedAt(), "createdAt should match provided quantity");
     }
 
     @Test
