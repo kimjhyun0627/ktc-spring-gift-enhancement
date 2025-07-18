@@ -1,7 +1,5 @@
 package gift.controller.user;
 
-import static gift.constant.PaginationConst.PRODUCT_PAGE_KEY;
-import static gift.constant.PaginationConst.PRODUCT_PAGE_SIZE;
 import static gift.util.RoleUtil.extractRole;
 
 import gift.dto.product.ProductRequest;
@@ -38,7 +36,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getAll(
-            @PageableDefault(size = PRODUCT_PAGE_SIZE, sort = PRODUCT_PAGE_KEY, direction = Sort.Direction.ASC)
+            @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC)
             Pageable pageable,
             HttpServletRequest httpServletRequest
     ) {

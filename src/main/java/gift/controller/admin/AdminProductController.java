@@ -1,8 +1,5 @@
 package gift.controller.admin;
 
-import static gift.constant.PaginationConst.PRODUCT_PAGE_KEY;
-import static gift.constant.PaginationConst.PRODUCT_PAGE_SIZE;
-
 import gift.annotation.CurrentRole;
 import gift.dto.product.ProductForm;
 import gift.entity.member.value.Role;
@@ -40,7 +37,7 @@ public class AdminProductController {
     @GetMapping
     public String list(
             @CurrentRole Role role,
-            @PageableDefault(size = PRODUCT_PAGE_SIZE, sort = PRODUCT_PAGE_KEY, direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             Model model
     ) {
         Page<Product> productsPage = productService.getAllProducts(pageable, role);
