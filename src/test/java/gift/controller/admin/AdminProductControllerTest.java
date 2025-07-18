@@ -1,5 +1,7 @@
 package gift.controller.admin;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -31,6 +33,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -61,14 +66,17 @@ class AdminProductControllerTest {
     @DisplayName("GET /admin/products - 관리자 리스트 조회")
     void listAsAdmin() throws Exception {
         Product p = ProductFixture.visible(1L, "A", 10, "http://example.com/image.png");
-        given(productService.getAllProducts(ADMIN)).willReturn(List.of(p));
+        Page<Product> page = new PageImpl<>(List.of(p));
+        given(productService.getAllProducts(any(Pageable.class), eq(ADMIN)))
+                .willReturn(page);
 
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(get("/admin/products"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("admin/product_list"))
+                    .andExpect(model().attributeExists("productsPage"))
                     .andExpect(model().attributeExists("products"));
         }
     }
@@ -77,7 +85,7 @@ class AdminProductControllerTest {
     @DisplayName("GET /admin/products/new - 폼 표시")
     void newFormAsAdmin() throws Exception {
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(get("/admin/products/new"))
                     .andExpect(status().isOk())
@@ -91,7 +99,7 @@ class AdminProductControllerTest {
     void createValidationError() throws Exception {
         ProductForm form = new ProductForm(null, "", null, "");
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(post("/admin/products/new")
                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -114,7 +122,7 @@ class AdminProductControllerTest {
                 .willReturn(created);
 
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(post("/admin/products/new")
                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -133,7 +141,7 @@ class AdminProductControllerTest {
         given(productService.getProductById(2L, ADMIN)).willReturn(Optional.of(p));
 
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(get("/admin/products/2/edit"))
                     .andExpect(status().isOk())
@@ -147,7 +155,7 @@ class AdminProductControllerTest {
     void updateValidationError() throws Exception {
         ProductForm form = new ProductForm(2L, "", null, "");
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(put("/admin/products/2")
                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -170,7 +178,7 @@ class AdminProductControllerTest {
                 .willReturn(updated);
 
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(put("/admin/products/2")
                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -188,7 +196,7 @@ class AdminProductControllerTest {
         willDoNothing().given(productService).deleteProduct(3L, ADMIN);
 
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(delete("/admin/products/3"))
                     .andExpect(status().is3xxRedirection())
@@ -203,7 +211,7 @@ class AdminProductControllerTest {
         willDoNothing().given(productService).unhideProduct(5L, ADMIN);
 
         try (MockedStatic<RoleUtil> util = Mockito.mockStatic(RoleUtil.class)) {
-            util.when(() -> RoleUtil.extractRole(Mockito.any())).thenReturn(ADMIN);
+            util.when(() -> RoleUtil.extractRole(any())).thenReturn(ADMIN);
 
             mockMvc.perform(post("/admin/products/4/hide"))
                     .andExpect(status().is3xxRedirection())

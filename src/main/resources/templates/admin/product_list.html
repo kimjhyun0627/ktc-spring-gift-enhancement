@@ -90,6 +90,36 @@
       font-size: 0.9em;
       margin-top: 5px;
     }
+
+    .pagination {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    .pagination li {
+      margin-right: 5px;
+    }
+
+    .pagination a, .pagination span {
+      display: block;
+      padding: 5px 10px;
+      text-decoration: none;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      color: #007bff;
+    }
+
+    .pagination .active span {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+    .pagination a:hover {
+      background-color: #f2f2f2;
+    }
   </style>
 </head>
 <body>
@@ -142,5 +172,49 @@
   </tr>
   </tbody>
 </table>
+
+<nav>
+  <ul class="pagination">
+    <!-- 이전 -->
+    <li th:classappend="${productsPage.first} ? 'disabled'">
+      <a th:href="@{/admin/products(
+            page=${productsPage.number - 1},
+            size=${productsPage.size},
+            sort=${sortParam}
+         )}"
+         th:if="${!productsPage.first}">
+        &laquo; 이전
+      </a>
+      <span th:if="${productsPage.first}">&laquo; 이전</span>
+    </li>
+
+    <!-- 번호 (중략) -->
+    <li th:classappend="${i == productsPage.number} ? 'active'"
+        th:each="i : ${#numbers.sequence(0, productsPage.totalPages - 1)}">
+      <a th:href="@{/admin/products(
+            page=${i},
+            size=${productsPage.size},
+            sort=${sortParam}
+         )}"
+         th:if="${i != productsPage.number}"
+         th:text="${i + 1}">1</a>
+      <span th:if="${i == productsPage.number}"
+            th:text="${i + 1}">1</span>
+    </li>
+
+    <!-- 다음 -->
+    <li th:classappend="${productsPage.last} ? 'disabled'">
+      <a th:href="@{/admin/products(
+            page=${productsPage.number + 1},
+            size=${productsPage.size},
+            sort=${sortParam}
+         )}"
+         th:if="${!productsPage.last}">
+        다음 &raquo;
+      </a>
+      <span th:if="${productsPage.last}">다음 &raquo;</span>
+    </li>
+  </ul>
+</nav>
 </body>
 </html>

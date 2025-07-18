@@ -2,11 +2,12 @@ package gift.service.wish;
 
 import gift.entity.member.Member;
 import gift.entity.wish.Wish;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface WishService {
 
-    List<Wish> getWishes(Member member);
+    Page<Wish> getWishes(Member member, Pageable pageable);
 
     Wish addWish(Member member, Long productId, int amount);
 

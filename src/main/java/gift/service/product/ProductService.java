@@ -2,12 +2,13 @@ package gift.service.product;
 
 import gift.entity.member.value.Role;
 import gift.entity.product.Product;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
 
-    List<Product> getAllProducts(Role role);
+    Page<Product> getAllProducts(Pageable pageable, Role role);
 
     Optional<Product> getProductById(Long id, Role role);
 
