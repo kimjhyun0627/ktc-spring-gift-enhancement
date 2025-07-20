@@ -1,9 +1,6 @@
 package gift.controller.admin;
 
-import static gift.util.HashUtil.sha256;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -16,12 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import gift.config.ResolverConfig;
 import gift.entity.member.Member;
 import gift.entity.member.value.Role;
 import gift.fixture.MemberFixture;
 import gift.service.member.MemberService;
+import gift.service.product.ProductService;
 import gift.util.BearerAuthUtil;
 import gift.util.JwtUtil;
+import gift.util.TestUtils;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -30,21 +30,31 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AdminMemberController.class)
+@Import(ResolverConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
+@DisplayName("AdminMemberController 단위 테스트")
 class AdminMemberControllerTest {
 
     private static final Role ADMIN = Role.ADMIN;
+
     @Autowired
     private MockMvc mockMvc;
+
     @MockitoBean
     private MemberService memberService;
+
+    @MockitoBean
+    private ProductService productService;
+
     @MockitoBean
     private JwtUtil jwtUtil;
+
     @MockitoBean
     private BearerAuthUtil bearerAuthUtil;
 
@@ -53,23 +63,12 @@ class AdminMemberControllerTest {
     class ListMembers {
 
         @Test
-        @DisplayName("정상 조회 - members 모델에 넣고 admin/member_list 뷰 반환")
+        @DisplayName("정상 조회")
         void 리스트조회_성공() throws Exception {
-            Member m1 = MemberFixture.newRegisteredMember(
-                    1L,
-                    "a@example.com",
-                    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                    Role.USER
-            );
-            Member m2 = MemberFixture.newRegisteredMember(
-                    2L,
-                    "b@example.com",
-                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                    Role.USER
-            );
+            Member m1 = MemberFixture.newRegisteredMember(1L, "a@example.com", "hash1", Role.USER);
+            Member m2 = MemberFixture.newRegisteredMember(2L, "b@example.com", "hash2", Role.USER);
 
-            given(memberService.getAllMembers(ADMIN))
-                    .willReturn(List.of(m1, m2));
+            given(memberService.getAllMembers(ADMIN)).willReturn(List.of(m1, m2));
 
             mockMvc.perform(get("/admin/members")
                             .requestAttr("authClaims", TestUtils.mockClaims(String.valueOf(ADMIN))))
@@ -102,16 +101,11 @@ class AdminMemberControllerTest {
         @DisplayName("유효한 입력 - 생성 후 리다이렉트")
         void 생성_성공() throws Exception {
             String raw = "abcdef";
-            String hash = sha256(raw);
-            Member created = MemberFixture.newRegisteredMember(
-                    1L,
-                    "new@ex.com",
-                    hash,
-                    Role.USER
-            );
-            given(memberService.createMember(
-                    eq("new@ex.com"), anyString(), eq(Role.USER), eq(ADMIN)))
-                    .willReturn(created);
+            // sha256 해시 대신 fixture 내부에서 이미 해시된 상태를 사용
+            Member created = MemberFixture.newRegisteredMember(1L, "new@ex.com", "hashed",
+                    Role.USER);
+            given(memberService.createMember("new@ex.com", raw, Role.USER, ADMIN)).willReturn(
+                    created);
 
             mockMvc.perform(post("/admin/members/new")
                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -135,8 +129,8 @@ class AdminMemberControllerTest {
                             .requestAttr("authClaims", TestUtils.mockClaims(String.valueOf(ADMIN))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("admin/member_form"))
-                    .andExpect(model().attributeHasFieldErrors(
-                            "memberForm", "email", "password", "role"));
+                    .andExpect(model().attributeHasFieldErrors("memberForm", "email", "password",
+                            "role"));
         }
     }
 
@@ -147,14 +141,8 @@ class AdminMemberControllerTest {
         @Test
         @DisplayName("존재하는 회원 - 폼에 채워서 반환")
         void 수정폼_성공() throws Exception {
-            Member existing = MemberFixture.newRegisteredMember(
-                    5L,
-                    "e@e.com",
-                    sha256("passwordHash"),
-                    Role.ADMIN
-            );
-            given(memberService.getMemberById(5L, ADMIN))
-                    .willReturn(Optional.of(existing));
+            Member existing = MemberFixture.newRegisteredMember(5L, "e@e.com", "hash", Role.ADMIN);
+            given(memberService.getMemberById(5L, ADMIN)).willReturn(Optional.of(existing));
 
             mockMvc.perform(get("/admin/members/5/edit")
                             .requestAttr("authClaims", TestUtils.mockClaims(String.valueOf(ADMIN))))
@@ -162,19 +150,14 @@ class AdminMemberControllerTest {
                     .andExpect(view().name("admin/member_form"))
                     .andExpect(model().attribute("memberForm",
                             is(new gift.dto.member.MemberForm(
-                                    5L,
-                                    "e@e.com",
-                                    existing.getPassword().passwordHash(),
-                                    Role.ADMIN
-                            ))
-                    ));
+                                    5L, "e@e.com", existing.getPassword().passwordHash(), Role.ADMIN
+                            ))));
         }
 
         @Test
-        @DisplayName("없는 회원 - MemberNotFoundException -> 404")
+        @DisplayName("없는 회원 - 404")
         void 수정폼_404() throws Exception {
-            given(memberService.getMemberById(99L, ADMIN))
-                    .willReturn(Optional.empty());
+            given(memberService.getMemberById(99L, ADMIN)).willReturn(Optional.empty());
 
             mockMvc.perform(get("/admin/members/99/edit")
                             .requestAttr("authClaims", TestUtils.mockClaims(String.valueOf(ADMIN))))
@@ -189,14 +172,9 @@ class AdminMemberControllerTest {
         @Test
         @DisplayName("정상 수정")
         void 수정_성공() throws Exception {
-            Member updated = MemberFixture.newRegisteredMember(
-                    5L,
-                    "up@up.com",
-                    sha256("newpass"),
-                    Role.USER
-            );
-            given(memberService.updateMember(
-                    eq(5L), eq("up@up.com"), anyString(), eq(Role.USER), eq(ADMIN)))
+            Member updated = MemberFixture.newRegisteredMember(5L, "up@up.com", "newhash",
+                    Role.USER);
+            given(memberService.updateMember(5L, "up@up.com", "newpass", Role.USER, ADMIN))
                     .willReturn(updated);
 
             mockMvc.perform(put("/admin/members/5")
@@ -217,13 +195,12 @@ class AdminMemberControllerTest {
             mockMvc.perform(put("/admin/members/5")
                             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                             .param("email", "")
-                            .param("passwordHash", "123")
+                            .param("password", "123")
                             .param("role", "")
                             .requestAttr("authClaims", TestUtils.mockClaims(String.valueOf(ADMIN))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("admin/member_form"))
-                    .andExpect(model().attributeHasFieldErrors(
-                            "memberForm", "email", "role"));
+                    .andExpect(model().attributeHasFieldErrors("memberForm", "email", "role"));
         }
     }
 

@@ -43,11 +43,12 @@ public class ProductOptionServiceImpl implements ProductOptionService {
         Product product = productRepository.findById(new ProductId(productId))
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
-        boolean exists = optionRepository.existsByProduct_IdAndName_Name(
-                new ProductId(productId),
-                name
-        );
-        if (exists) {
+        if (
+                optionRepository.existsByProduct_IdAndName_Name(
+                        new ProductId(productId),
+                        name
+                )
+        ) {
             throw new OptionAlreadyExistException();
         }
 
@@ -61,7 +62,7 @@ public class ProductOptionServiceImpl implements ProductOptionService {
     public void decreaseOption(Long optionId, int amount) {
         ProductOption option = optionRepository.findById(optionId)
                 .orElseThrow(() -> new OptionNotFoundException(optionId));
-        option.decrease(amount);
+        option.decreaseAmount(amount);
     }
 }
 

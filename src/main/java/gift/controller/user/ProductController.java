@@ -1,13 +1,12 @@
 package gift.controller.user;
 
-import static gift.util.RoleUtil.extractRole;
-
+import gift.annotation.CurrentRole;
 import gift.dto.product.ProductRequest;
 import gift.dto.product.ProductResponse;
+import gift.entity.member.value.Role;
 import gift.entity.product.Product;
 import gift.exception.custom.ProductNotFoundException;
 import gift.service.product.ProductService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,12 +37,9 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponse>> getAll(
             @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC)
             Pageable pageable,
-            HttpServletRequest httpServletRequest
+            @CurrentRole Role role
     ) {
-        Page<Product> products = productService.getAllProducts(
-                pageable,
-                extractRole(httpServletRequest)
-        );
+        Page<Product> products = productService.getAllProducts(pageable, role);
 
         Page<ProductResponse> responsePage = products.map(Product::toResponse);
 
@@ -53,39 +49,42 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getById(
-            HttpServletRequest httpServletRequest,
-            @PathVariable Long id) {
-        Product product = productService.getProductById(id, extractRole(httpServletRequest))
+            @CurrentRole Role role,
+            @PathVariable Long id
+    ) {
+        Product product = productService.getProductById(id, role)
                 .orElseThrow(() -> new ProductNotFoundException(id));
         return ResponseEntity.ok(product.toResponse());
     }
 
     @PostMapping
     public ResponseEntity<ProductResponse> create(
-            HttpServletRequest httpServletRequest,
-            @Valid @RequestBody ProductRequest productRequest) {
+            @CurrentRole Role role,
+            @Valid @RequestBody ProductRequest productRequest
+    ) {
         Product product = productService.createProduct(
                 productRequest.name(), productRequest.price(), productRequest.imageUrl(),
-                extractRole(httpServletRequest));
+                role);
         return ResponseEntity.status(HttpStatus.CREATED).body(product.toResponse());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> update(
-            HttpServletRequest httpServletRequest,
+            @CurrentRole Role role,
             @PathVariable Long id,
-            @Valid @RequestBody ProductRequest productRequest) {
-        Product product = productService.updateProduct(
-                id, productRequest.name(), productRequest.price(), productRequest.imageUrl(),
-                extractRole(httpServletRequest));
+            @Valid @RequestBody ProductRequest productRequest
+    ) {
+        Product product = productService.updateProduct(id, productRequest.name(),
+                productRequest.price(), productRequest.imageUrl(), role);
         return ResponseEntity.ok(product.toResponse());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            HttpServletRequest httpServletRequest,
-            @PathVariable Long id) {
-        productService.deleteProduct(id, extractRole(httpServletRequest));
+            @CurrentRole Role role,
+            @PathVariable Long id
+    ) {
+        productService.deleteProduct(id, role);
         return ResponseEntity.noContent().build();
     }
 }

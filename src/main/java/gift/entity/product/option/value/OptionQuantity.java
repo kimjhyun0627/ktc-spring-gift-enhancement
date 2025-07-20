@@ -1,21 +1,24 @@
 package gift.entity.product.option.value;
 
 import gift.exception.custom.InvalidOptionDecreaseException;
+import gift.exception.custom.InvalidOptionException;
 import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 
 @Embeddable
 public record OptionQuantity(
-        @Min(value = 1, message = "수량은 최소 1개 이상이어야 합니다")
-        @Max(value = MAX_OPT_QUANTITY_SIZE,
-                message = "수량은 " + (MAX_OPT_QUANTITY_SIZE + 1) + "개 미만이어야 합니다")
         int quantity
 ) {
 
-    private static final int MAX_OPT_QUANTITY_SIZE = 99_999_999;
+    private static final int MIN_QUANTITY = 1;
+    private static final int MAX_QUANTITY = 100_000_000 - 1;
 
     public OptionQuantity {
+        if (quantity < MIN_QUANTITY) {
+            throw new InvalidOptionException("수량은 최소 " + MIN_QUANTITY + "개 이상이어야 합니다");
+        }
+        if (quantity > MAX_QUANTITY) {
+            throw new InvalidOptionException("수량은 " + (MAX_QUANTITY + 1) + "개 미만이어야 합니다");
+        }
     }
 
     public OptionQuantity decreaseBy(int amount) {

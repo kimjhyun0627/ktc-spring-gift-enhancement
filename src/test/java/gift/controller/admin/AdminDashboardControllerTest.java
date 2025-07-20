@@ -5,7 +5,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import gift.config.ResolverConfig;
 import gift.service.member.MemberService;
+import gift.service.product.ProductService;
 import gift.util.BearerAuthUtil;
 import gift.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -17,6 +19,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,6 +29,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @WebMvcTest(AdminDashboardController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @DisplayName("AdminDashboardController 단위 테스트")
+@Import(ResolverConfig.class)
 class AdminDashboardControllerTest {
 
     private static final String EMAIL = "user@example.com";
@@ -38,7 +42,8 @@ class AdminDashboardControllerTest {
     private JwtUtil jwtUtil;
     @MockitoBean
     private BearerAuthUtil bearerAuthUtil;
-
+    @MockitoBean
+    private ProductService productService;
     @MockitoBean
     private MemberService memberService;
 

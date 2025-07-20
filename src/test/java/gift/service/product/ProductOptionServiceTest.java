@@ -148,24 +148,22 @@ class ProductOptionServiceTest {
 
     @Test
     @DisplayName("decreaseOption: 옵션 존재 시 decrease 호출")
-    void decreaseOption_success() {
+    void decreaseAmountOption_success() {
         // given
         ProductOption opt = mock(ProductOption.class);
         int amount = 2;
         willReturn(Optional.of(opt))
-                .given(optionRepository).findById(eq(amount + 5L)); // arbitrary id
+                .given(optionRepository).findById(eq(amount + 5L));
 
-        // when
         service.decreaseOption(amount + 5L, amount);
 
-        // then
-        verify(opt).decrease(amount);
+        verify(opt).decreaseAmount(amount);
         then(optionRepository).should().findById(eq(amount + 5L));
     }
 
     @Test
     @DisplayName("decreaseOption: 옵션 없으면 OptionNotFoundException")
-    void decreaseOption_notFound() {
+    void decreaseAmountOption_notFound() {
         long optId = 77L;
         willReturn(Optional.empty())
                 .given(optionRepository).findById(eq(optId));

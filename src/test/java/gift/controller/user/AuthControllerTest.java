@@ -5,9 +5,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gift.config.ResolverConfig;
 import gift.dto.member.AuthRequest;
 import gift.dto.member.AuthResponse;
 import gift.service.member.MemberService;
+import gift.service.product.ProductService;
 import gift.util.BasicAuthUtil;
 import gift.util.BearerAuthUtil;
 import gift.util.JwtUtil;
@@ -19,6 +21,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -30,6 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @DisplayName("AuthController 단위 테스트 (Fixture 적용)")
+@Import(ResolverConfig.class)
 class AuthControllerTest {
 
     @Autowired
@@ -40,6 +44,8 @@ class AuthControllerTest {
 
     @MockitoBean
     private MemberService memberService;
+    @MockitoBean
+    private ProductService productService;
 
     @MockitoBean
     private JwtUtil jwtUtil;

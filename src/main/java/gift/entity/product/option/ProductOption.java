@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.Valid;
 
 @Entity
 @Table(name = "product_option")
@@ -30,12 +29,10 @@ public class ProductOption {
     private Product product;
 
     @Embedded
-    @Valid
     @Column(name = "name", nullable = false)
     private OptionName name;
 
     @Embedded
-    @Valid
     @Column(name = "quantity", nullable = false)
     private OptionQuantity quantity;
 
@@ -58,7 +55,7 @@ public class ProductOption {
         this.product = product;
     }
 
-    public void decrease(int amount) {
+    public void decreaseAmount(int amount) {
         this.quantity = this.quantity.decreaseBy(amount);
     }
 
