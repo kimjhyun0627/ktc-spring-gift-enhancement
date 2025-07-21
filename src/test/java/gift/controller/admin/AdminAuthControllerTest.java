@@ -10,12 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
+import gift.config.ResolverConfig;
 import gift.dto.member.AuthRequest;
 import gift.dto.member.AuthResponse;
 import gift.filter.AdminCookieFilter;
 import gift.service.member.MemberService;
 import gift.util.BearerAuthUtil;
-import gift.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -31,17 +32,17 @@ import org.springframework.test.web.servlet.MockMvc;
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AdminAuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(ResolverConfig.class)
 @DisplayName("AdminAuthController 단위 테스트")
 class AdminAuthControllerTest {
-
-    @MockitoBean
-    private JwtUtil jwtUtil;
-    @MockitoBean
-    private BearerAuthUtil bearerAuthUtil;
+    
     @Autowired
     private MockMvc mockMvc;
+
     @MockitoBean
     private MemberService memberService;
+    @MockitoBean
+    private BearerAuthUtil bearerAuthUtil;
 
     @BeforeEach
     void setUp() {

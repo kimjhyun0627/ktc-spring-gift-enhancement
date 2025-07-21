@@ -1,8 +1,5 @@
 package gift.controller.user;
 
-import static gift.constant.PaginationConst.WISH_PAGE_KEY;
-import static gift.constant.PaginationConst.WISH_PAGE_SIZE;
-
 import gift.annotation.LoginMember;
 import gift.dto.wish.WishRequest;
 import gift.dto.wish.WishResponse;
@@ -35,7 +32,7 @@ public class WishController {
     @GetMapping
     public Page<WishResponse> list(
             @LoginMember Member member,
-            @PageableDefault(size = WISH_PAGE_SIZE, sort = WISH_PAGE_KEY, direction = Sort.Direction.DESC)
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
         return wishService.getWishes(member, pageable)
