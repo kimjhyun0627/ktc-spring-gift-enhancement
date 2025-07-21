@@ -1,6 +1,7 @@
 package gift.service.product.option;
 
 import gift.dto.product.option.OptionResponse;
+import gift.entity.member.value.Role;
 import gift.entity.product.Product;
 import gift.entity.product.option.ProductOption;
 import gift.entity.product.value.ProductId;
@@ -11,6 +12,7 @@ import gift.repository.product.ProductRepository;
 import gift.repository.product.option.ProductOptionRepository;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,39 +32,45 @@ public class ProductOptionServiceImpl implements ProductOptionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OptionResponse> getOptions(Long productId) {
-        productRepository.findById(new ProductId(productId))
-                .orElseThrow(() -> new ProductNotFoundException(productId));
+    public List<OptionResponse> getOptions(Long productId, Role role) {
+        authorizeProduct(productId, role);
+
         return optionRepository.findAllByProduct_Id(new ProductId(productId)).stream()
-                .map(ProductOption::toResponse)
+                .map(OptionResponse::of)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public OptionResponse addOption(Long productId, String name, int quantity) {
-        Product product = productRepository.findById(new ProductId(productId))
-                .orElseThrow(() -> new ProductNotFoundException(productId));
+    public OptionResponse addOption(Long productId, String name, int quantity, Role role) {
+        Product product = authorizeProduct(productId, role);
 
-        if (
-                optionRepository.existsByProduct_IdAndName_Name(
-                        new ProductId(productId),
-                        name
-                )
-        ) {
+        try {
+            ProductOption option = ProductOption.of(product, name, quantity);
+            ProductOption savedOption = optionRepository.save(option);
+            return OptionResponse.of(savedOption);
+        } catch (DataIntegrityViolationException ex) {
             throw new OptionAlreadyExistException();
         }
-
-        ProductOption option = ProductOption.of(name, quantity);
-        option.assignTo(product);
-        ProductOption savedOption = optionRepository.save(option);
-        return savedOption.toResponse();
     }
 
     @Override
-    public void decreaseOption(Long optionId, int amount) {
+    public void decreaseOptionAmount(Long productId, Long optionId, int amount, Role role) {
+        Product pproduct = authorizeProduct(productId, role);
         ProductOption option = optionRepository.findById(optionId)
                 .orElseThrow(() -> new OptionNotFoundException(optionId));
+        if (!option.getProduct().getId().equals(pproduct.getId())) {
+            throw new OptionNotFoundException(optionId);
+        }
         option.decreaseAmount(amount);
+    }
+
+    private Product authorizeProduct(Long productId, Role role) throws ProductNotFoundException {
+        Product product = productRepository.findById(new ProductId(productId))
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+        if (role.isUser() && product.isHidden()) {
+            throw new ProductNotFoundException(productId);
+        }
+        return product;
     }
 }
 

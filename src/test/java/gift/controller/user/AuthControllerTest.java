@@ -9,10 +9,8 @@ import gift.config.ResolverConfig;
 import gift.dto.member.AuthRequest;
 import gift.dto.member.AuthResponse;
 import gift.service.member.MemberService;
-import gift.service.product.ProductService;
 import gift.util.BasicAuthUtil;
 import gift.util.BearerAuthUtil;
-import gift.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,11 +42,6 @@ class AuthControllerTest {
 
     @MockitoBean
     private MemberService memberService;
-    @MockitoBean
-    private ProductService productService;
-
-    @MockitoBean
-    private JwtUtil jwtUtil;
     @MockitoBean
     private BearerAuthUtil bearerAuthUtil;
 

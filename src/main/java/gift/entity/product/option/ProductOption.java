@@ -1,6 +1,5 @@
 package gift.entity.product.option;
 
-import gift.dto.product.option.OptionResponse;
 import gift.entity.product.Product;
 import gift.entity.product.option.value.OptionName;
 import gift.entity.product.option.value.OptionQuantity;
@@ -39,13 +38,23 @@ public class ProductOption {
     protected ProductOption() {
     }
 
-    private ProductOption(OptionName name, OptionQuantity quantity) {
+    private ProductOption(Product product, OptionName name, OptionQuantity quantity) {
+        this.product = product;
         this.name = name;
         this.quantity = quantity;
     }
 
     public static ProductOption of(String name, int quantity) {
         return new ProductOption(
+                null,
+                new OptionName(name),
+                new OptionQuantity(quantity)
+        );
+    }
+
+    public static ProductOption of(Product product, String name, int quantity) {
+        return new ProductOption(
+                product,
                 new OptionName(name),
                 new OptionQuantity(quantity)
         );
@@ -73,9 +82,5 @@ public class ProductOption {
 
     public OptionQuantity getQuantity() {
         return quantity;
-    }
-
-    public OptionResponse toResponse() {
-        return OptionResponse.of(this);
     }
 }

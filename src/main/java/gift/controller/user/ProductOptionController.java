@@ -1,12 +1,10 @@
 package gift.controller.user;
 
-import gift.annotation.AuthorizedProduct;
 import gift.annotation.CurrentRole;
 import gift.dto.product.option.DecreaseOptionRequest;
 import gift.dto.product.option.OptionRequest;
 import gift.dto.product.option.OptionResponse;
 import gift.entity.member.value.Role;
-import gift.entity.product.Product;
 import gift.service.product.option.ProductOptionService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -32,35 +30,37 @@ public class ProductOptionController {
 
     @GetMapping
     public ResponseEntity<List<OptionResponse>> getOptions(
-            @CurrentRole Role _role,
-            @AuthorizedProduct Product product
+            @CurrentRole Role role,
+            @PathVariable Long productId
     ) {
-        List<OptionResponse> options = optionService.getOptions(product.getId().id());
+        List<OptionResponse> options = optionService.getOptions(productId, role);
         return ResponseEntity.ok(options);
     }
 
     @PostMapping
     public ResponseEntity<OptionResponse> addOption(
-            @CurrentRole Role _role,
-            @AuthorizedProduct Product product,
+            @CurrentRole Role role,
+            @PathVariable Long productId,
             @Valid @RequestBody OptionRequest optionRequest
     ) {
         OptionResponse response = optionService.addOption(
-                product.getId().id(),
+                productId,
                 optionRequest.name(),
-                optionRequest.quantity()
+                optionRequest.quantity(),
+                role
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{optionId}/decrease")
     public ResponseEntity<Void> decreaseOption(
-            @CurrentRole Role _role,
-            @AuthorizedProduct Product _product,
+            @CurrentRole Role role,
+            @PathVariable Long productId,
             @PathVariable Long optionId,
             @Valid @RequestBody DecreaseOptionRequest decreaseOptionRequest
     ) {
-        optionService.decreaseOption(optionId, decreaseOptionRequest.amount());
+        optionService.decreaseOptionAmount(productId, optionId, decreaseOptionRequest.amount(),
+                role);
         return ResponseEntity.noContent().build();
     }
 }

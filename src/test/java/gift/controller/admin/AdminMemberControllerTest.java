@@ -18,9 +18,7 @@ import gift.entity.member.Member;
 import gift.entity.member.value.Role;
 import gift.fixture.MemberFixture;
 import gift.service.member.MemberService;
-import gift.service.product.ProductService;
 import gift.util.BearerAuthUtil;
-import gift.util.JwtUtil;
 import gift.util.TestUtils;
 import java.util.List;
 import java.util.Optional;
@@ -48,12 +46,6 @@ class AdminMemberControllerTest {
 
     @MockitoBean
     private MemberService memberService;
-
-    @MockitoBean
-    private ProductService productService;
-
-    @MockitoBean
-    private JwtUtil jwtUtil;
 
     @MockitoBean
     private BearerAuthUtil bearerAuthUtil;

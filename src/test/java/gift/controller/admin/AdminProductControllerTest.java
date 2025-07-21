@@ -22,7 +22,6 @@ import gift.fixture.ProductFixture;
 import gift.service.member.MemberService;
 import gift.service.product.ProductService;
 import gift.util.BearerAuthUtil;
-import gift.util.JwtUtil;
 import gift.util.TestUtils;
 import java.util.List;
 import java.util.Optional;
@@ -55,8 +54,6 @@ class AdminProductControllerTest {
     private ProductService productService;
     @MockitoBean
     private MemberService memberService;
-    @MockitoBean
-    private JwtUtil jwtUtil;
     @MockitoBean
     private BearerAuthUtil bearerAuthUtil;
 

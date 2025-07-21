@@ -7,9 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import gift.config.ResolverConfig;
 import gift.service.member.MemberService;
-import gift.service.product.ProductService;
 import gift.util.BearerAuthUtil;
-import gift.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,17 +31,15 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 class AdminDashboardControllerTest {
 
     private static final String EMAIL = "user@example.com";
+
     @Autowired
     private MockMvc mockMvc;
+
     @Mock
     private Claims claims;
 
     @MockitoBean
-    private JwtUtil jwtUtil;
-    @MockitoBean
     private BearerAuthUtil bearerAuthUtil;
-    @MockitoBean
-    private ProductService productService;
     @MockitoBean
     private MemberService memberService;
 

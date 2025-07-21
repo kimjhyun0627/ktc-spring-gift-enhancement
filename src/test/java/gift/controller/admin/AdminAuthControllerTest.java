@@ -15,9 +15,7 @@ import gift.dto.member.AuthRequest;
 import gift.dto.member.AuthResponse;
 import gift.filter.AdminCookieFilter;
 import gift.service.member.MemberService;
-import gift.service.product.ProductService;
 import gift.util.BearerAuthUtil;
-import gift.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,17 +35,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(ResolverConfig.class)
 @DisplayName("AdminAuthController 단위 테스트")
 class AdminAuthControllerTest {
-
-    @MockitoBean
-    private JwtUtil jwtUtil;
-    @MockitoBean
-    private BearerAuthUtil bearerAuthUtil;
+    
     @Autowired
     private MockMvc mockMvc;
+
     @MockitoBean
     private MemberService memberService;
     @MockitoBean
-    private ProductService productService;
+    private BearerAuthUtil bearerAuthUtil;
 
     @BeforeEach
     void setUp() {
