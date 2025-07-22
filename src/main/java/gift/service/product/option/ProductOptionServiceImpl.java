@@ -64,7 +64,7 @@ public class ProductOptionServiceImpl implements ProductOptionService {
         option.decreaseAmount(amount);
     }
 
-    private Product authorizeProduct(Long productId, Role role) throws ProductNotFoundException {
+    private Product authorizeProduct(Long productId, Role role) {
         Product product = productRepository.findById(new ProductId(productId))
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         if (role.isUser() && product.isHidden()) {
